@@ -40,3 +40,11 @@ LNDH-CoreDev-v1/
 └── test/
     └── ...
 ```
+
+## Priyoridad
+
+1. System
+2. Time
+3. Util
+4. Task
+5. Event
