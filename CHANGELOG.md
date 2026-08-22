@@ -1,6 +1,18 @@
 # Changelog
 
-## [0.1.3] — Pagkakakilanlan ng Instansiya at Pamamahala ng Ikot-Buhay (*Instance Identity and Lifecycle Control*) 
+## [0.1.3] — Pagkakakilanlan ng Instansiya at Pagtukoy ng Magkaparehong ID (*Instance Identity and Duplicate Detection*)
+### Idinagdag 
+- User-assigned instance ID para sa bawat `UbodCore`.
+- Pagpapatunay ng duplicate instance ID.
+- `id()` at `isIdValid()` API.
+- Paunang instance registry para sa identity validation.
+### Sinubukan
+- Dalawang valid na instance na may magkakaibang ID.
+- Duplicate ID sa dalawang `UbodCore` instance.
+- Pagpigil sa initialization ng instance na may duplicate ID.
+### Tala
+- Ang instance ID ay nakalaan para sa **MCU/device** scope.
+- Eksperimental pa ang registry at identity lifecycle.
 
 ## [0.1.2] — Estado ng Pagtakbo ng Instansiya (*Instance Runtime State*)
 ### Idinagdag
