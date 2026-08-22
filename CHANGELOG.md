@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.1.4] — Ikot-Buhay ng Instansiya at Pagpapalaya ng Pagkakakilanlan (*Instance Lifecycle and Identity Release*)
+### Idinagdag 
+- `release()` API para sa `UbodCore`.
+- `Released` state para sa mga instance na natapos na ang lifecycle.
+- `Invalid` state para sa mga instance na hindi nakakuha ng valid identity.
+- Pagpapalaya ng instance ID kapag nag-release.
+- Muling paggamit ng dating released na instance ID.
+- Pag-freeze ng uptime kapag released na ang instnace.
+### Binago
+- Hindi na maaaring muling i-activate ang isang released na `UbodCore`.
+- Ang duplicate o hindi available na instance ID ay nagreresulta sa `Invalid` state.
+- Ang invalid na instance ay nananatiling `Invalid` sa `begin()` at `update()`.
+### Sinubukan
+- Multiple instances sa loob ng MCU/device scope.
+- Duplicate instance ID detection.
+- Instance release at identity release.
+- Reuse ng released instance ID.
+- Pagpigil sa ressurection ng released instance.
+- Pagpapanatili ng `Invalid` state ng failed instance.
+### Tala
+- Ang instance ID ay nananatiling nasa **MCU/device scope**.
+- Ang `Released` at `Invalid` ay magkaibang lifecycle conditions.
+- Hindi pa bahagi ng bersiyong ito ang dynamic memory allocation, instance pool, o user-assigned instance name.
+
 ## [0.1.3] — Pagkakakilanlan ng Instansiya at Pagtukoy ng Magkaparehong ID (*Instance Identity and Duplicate Detection*)
 ### Idinagdag 
 - User-assigned instance ID para sa bawat `UbodCore`.

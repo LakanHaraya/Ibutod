@@ -3,7 +3,9 @@
 enum class UbodState {
     Initializing, 
     Ready,
-    Running
+    Running,
+    Released,
+    Invalid
 };
 class UbodCore
 {
@@ -12,6 +14,7 @@ class UbodCore
 
         void begin();
         void update();
+        void release();
 
         unsigned int id() const;
         bool isIdValid() const;
@@ -24,4 +27,5 @@ class UbodCore
         bool _idValid = false;
         UbodState _state = UbodState::Initializing;
         unsigned long _startTime = 0;
+        unsigned long _finalUptime = 0;
 };

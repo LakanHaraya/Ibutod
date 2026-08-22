@@ -5,29 +5,68 @@ UbodCore coreA(1);
 UbodCore coreB(2);
 UbodCore coreC(1);
 
-void setup() {
+void printState(const char* name, const UbodCore& core)
+{
+  Serial.print(name);
+  Serial.print(" | ID: ");
+  Serial.print(core.id());
+  Serial.print(" | ID valid: ");
+  Serial.print(core.isIdValid() ? "YES" : "NO");
+  Serial.print(" | state: ");
+
+  switch (core.state())
+  {
+    case UbodState::Initializing:
+      Serial.print("INITIALIZING");
+      break;
+
+    case UbodState::Ready:
+      Serial.print("READY");
+      break;
+
+    case UbodState::Running:
+      Serial.print("RUNNING");
+      break;
+
+    case UbodState::Released:
+      Serial.print("RELEASED");
+      break;
+
+    case UbodState::Invalid:
+      Serial.print("INVALID");
+      break;
+  }
+
+  Serial.print(" | uptime: ");
+  Serial.print(core.uptime());
+  Serial.println(" ms");
+}
+
+void setup()
+{
   Serial.begin(115200);
 
-  delay(1000); // Wait for Serial to initialize
+  delay(1000);
 
+  Serial.println();
   Serial.println("==================================");
-  Serial.println("      UBOD v0.1.3 EXPERIMENT      ");
+  Serial.println("      UBOD v0.1.4 EXPERIMENT");
   Serial.println("==================================");
 
-  Serial.print("Core A ID: ");
-  Serial.print(coreA.id());
-  Serial.print(" | valid: ");
-  Serial.println(coreA.isIdValid() ? "YES" : "NO");
+  // --------------------------------------------------
+  // 1. Identity validation
+  // --------------------------------------------------
 
-  Serial.print("Core B ID: ");
-  Serial.print(coreB.id());
-  Serial.print(" | valid: ");
-  Serial.println(coreB.isIdValid() ? "YES" : "NO");
+  Serial.println();
+  Serial.println("Identity validation:");
 
-  Serial.print("Core C ID: ");
-  Serial.print(coreC.id());
-  Serial.print(" | valid: ");
-  Serial.println(coreC.isIdValid() ? "YES" : "NO");
+  printState("Core A", coreA);
+  printState("Core B", coreB);
+  printState("Core C", coreC);
+
+  // --------------------------------------------------
+  // 2. Begin valid instances
+  // --------------------------------------------------
 
   coreA.begin();
   coreB.begin();
@@ -36,43 +75,73 @@ void setup() {
   Serial.println();
   Serial.println("Post-begin state:");
 
-  Serial.print("Core A: ");
-  Serial.println(
-    coreA.state() == UbodState::Ready ? "READY" : "NOT READY"
-  );
+  printState("Core A", coreA);
+  printState("Core B", coreB);
+  printState("Core C", coreC);
 
-  Serial.print("Core B: ");
-  Serial.println(
-    coreB.state() == UbodState::Ready ? "READY" : "NOT READY"
-  );
+  // --------------------------------------------------
+  // 3. Run valid instances
+  // --------------------------------------------------
 
-  Serial.print("Core C: ");
-  Serial.println(
-    coreC.state() == UbodState::Ready ? "READY" : "NOT READY"
-  );
-}
-
-void loop() {
   coreA.update();
   coreB.update();
   coreC.update();
 
-  Serial.println("");
+  Serial.println();
+  Serial.println("Post-update state:");
 
-  Serial.print("Core A state: ");
-  Serial.println(
-    coreA.state() == UbodState::Running ? "RUNNING" : "OTHER"
-  );
+  printState("Core A", coreA);
+  printState("Core B", coreB);
+  printState("Core C", coreC);
 
-  Serial.print("Core B state: ");
-  Serial.println(
-    coreB.state() == UbodState::Running ? "RUNNING" : "OTHER"
-  );
+  // --------------------------------------------------
+  // 4. Release Core A
+  // --------------------------------------------------
 
-  Serial.print("Core C state: ");
-  Serial.println(
-    coreC.state() == UbodState::Running ? "RUNNING" : "OTHER"
-  );
+  Serial.println();
+  Serial.println("Releasing Core A...");
 
-  delay(1000);
+  coreA.release();
+
+  printState("Core A", coreA);
+
+  // --------------------------------------------------
+  // 5. Attempt to reuse released ID
+  // --------------------------------------------------
+
+  Serial.println();
+  Serial.println("Creating Core D with released ID 1...");
+
+  UbodCore coreD(1);
+
+  printState("Core D", coreD);
+
+  coreD.begin();
+
+  Serial.println();
+  Serial.println("Core D after begin:");
+
+  printState("Core D", coreD);
+
+  // --------------------------------------------------
+  // 6. Attempt to revive Core A
+  // --------------------------------------------------
+
+  Serial.println();
+  Serial.println("Attempting to restart Core A...");
+
+  coreA.begin();
+  coreA.update();
+
+  printState("Core A", coreA);
+
+  Serial.println();
+  Serial.println("==================================");
+  Serial.println("      EXPERIMENT COMPLETE");
+  Serial.println("==================================");
+}
+
+void loop()
+{
+    // No continuous test required for v0.1.4.
 }

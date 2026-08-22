@@ -5,12 +5,23 @@ namespace {
     constexpr unsigned int MaxUbodInstances = 8;
     unsigned int registeredIds[MaxUbodInstances] = {};
     unsigned int registeredCount = 0;
+
+    void unregisterId(unsigned int id) {
+        for (unsigned int i = 0; i < registeredCount; ++i) {
+            if (registeredIds[i] == id) {
+                registeredIds[i] = registeredIds[registeredCount - 1];
+                --registeredCount;
+                return;
+            }
+        }
+    }
 }
 
 UbodCore::UbodCore(unsigned int id) : _id(id) {
     for (unsigned int i = 0; i < registeredCount; ++i) {
         if (registeredIds[i] == _id) {
             _idValid = false;
+            _state = UbodState::Invalid;
             return;
         }
     }
@@ -20,6 +31,15 @@ UbodCore::UbodCore(unsigned int id) : _id(id) {
         ++registeredCount;
         _idValid = true;
     }
+}
+
+void UbodCore::release() {
+    if (!_idValid) { return; }
+
+    _finalUptime = millis() - _startTime;
+    unregisterId(_id);
+    _idValid = false;
+    _state = UbodState::Released;
 }
 
 unsigned int UbodCore::id() const {
@@ -32,17 +52,16 @@ bool UbodCore::isIdValid() const {
 
 // Initialize the UbodCore
 void UbodCore::begin() {
-    if (!_idValid) { return; }
+    if (!_idValid || _state == UbodState::Released) { return; }
 
     _state = UbodState::Ready;
     _startTime = millis();
-    // Initialization code here
 }
 
 // Update the state of the UbodCore
 void UbodCore::update() {
-    if (!_idValid) { return; }
-    
+    if (!_idValid || _state == UbodState::Released) { return; }
+
     if (_state == UbodState::Ready) {
         _state = UbodState::Running;
     }
@@ -58,7 +77,11 @@ bool UbodCore::isReady() const {
     return _state == UbodState::Ready;
 }
 
-// Get the uptime of the UbodCore in milliseconds
+// Get the uptime of the UbodCore
 unsigned long UbodCore::uptime() const {
+    if (_state == UbodState::Released) {
+        return _finalUptime;
+    }
+
     return millis() - _startTime;
 }
