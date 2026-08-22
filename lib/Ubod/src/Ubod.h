@@ -5,6 +5,7 @@ class UbodCore
     public:
         void begin();
         void update();
-};
 
-extern UbodCore Ubod;
+        bool isReady() const;
+        unsigned long uptime() const;
+};
