@@ -1,4 +1,24 @@
 # Changelog
+## [0.1.7] — Pagkakaroon ng Puwang ng Ubod (*Core Slot Availability*)
+### Idinagdag
+- Idinagdag ang `UbodAvailabaility` para sa kalagayan ng Core Slot.
+- Idinagdag ang `FREE` at `OCCUPIED` na availability states.
+- Idinagdag ang `occupy()`, `free()`, `availability()`, `isFree()`, at `isOccupied()`.
+### Binago
+- Hiniwalay ang availability ng Core Slot sa lifecycle state ng Ubod.
+- Ang bagong Core Slot ay nagsisimula bilang `FRRE`.
+- Hindi awtomatikong binabago ng `begin()` ang availability.
+### Sinubukan
+- `FREE` patungong `OCCUPIED` gamit ang `occupy()`.
+- Pagtanggi sa paulit-ulit na `occupy()`.
+- `OCCUPIED` patungong `FREE` gamit ang `free()`.
+- Pagtanggi sa paulit-ulit na `free()`.
+- Malayang availability ng magkakaibang Core Slot.
+- Pagkakahiwalay ng lifecycle state at availability.
+### Tala
+- Hindi pa binabago ang kasalukuyang semantika ng `release()`.
+- Hindi pa kasama ang Core Engine assignment at Static Core Slot Pool.
+
 ## [0.1.6] — Pagpapatibay ng Pangalan ng Ubod (*Core Name Validation*)
 ### Idinagdag
 - Nagdagdag ng validation para sa Core Name.
@@ -11,8 +31,8 @@
 - Pinananatili ang kasalukuyang Core Name kapag `RELEASED` ang Core.
 - Hindi maaaring magpalit ng pangalan ang isang released Core.
 ### Tala
-- Normal naming.
-- Empty at whitespace-only names.
+- Normal naming. 
+- Walang empty at whitespace-only names.
 - Maximum name length.
 - Duplicate names.
 - Core renaming.

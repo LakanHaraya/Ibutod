@@ -81,6 +81,32 @@ const char* UbodCore::name() const {
     return _name;
 }
 
+bool UbodCore::occupy() {
+    if (!_idValid || _state == UbodState::Released) { return false; }
+    if (_availability == UbodAvailability::Occupied) { return false; }
+    _availability = UbodAvailability::Occupied;
+    return true;
+}
+
+bool UbodCore::free() {
+    if (!_idValid || _state == UbodState::Released) { return false; }
+    if (_availability == UbodAvailability::Free) { return false; }
+    _availability = UbodAvailability::Free;
+    return true;
+}
+
+UbodAvailability UbodCore::availability() const {
+    return _availability;
+}
+
+bool UbodCore::isFree() const {
+    return _availability == UbodAvailability::Free;
+}
+
+bool UbodCore::isOccupied() const {
+    return _availability == UbodAvailability::Occupied;
+}
+
 void UbodCore::begin() {
     if (!_idValid || _state == UbodState::Released) { return; }
 

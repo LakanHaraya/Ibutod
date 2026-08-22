@@ -7,6 +7,12 @@ enum class UbodState {
     Released,
     Invalid
 };
+
+enum class UbodAvailability {
+    Free,
+    Occupied
+};
+
 class UbodCore
 {
     public:
@@ -20,6 +26,13 @@ class UbodCore
         bool isIdValid() const;
         bool setName(const char* name);
         const char* name() const;
+
+        bool occupy();
+        bool free();
+        UbodAvailability availability() const;
+        bool isFree() const;
+        bool isOccupied() const;
+
         UbodState state() const;
         bool isReady() const;
         unsigned long uptime() const;
@@ -29,6 +42,7 @@ class UbodCore
         static constexpr unsigned int MaxNameLength = 15;
         char _name[MaxNameLength + 1] = {};
         bool _idValid = false;
+        UbodAvailability _availability = UbodAvailability::Free;
         UbodState _state = UbodState::Initializing;
         unsigned long _startTime = 0;
         unsigned long _finalUptime = 0;

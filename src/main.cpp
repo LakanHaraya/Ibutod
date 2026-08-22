@@ -1,101 +1,157 @@
 #include <Arduino.h>
 #include "Ubod.h"
 
-void testName(
-    UbodCore& core,
-    const char* testName,
-    const char* value
-) {
-    Serial.print(testName);
-    Serial.print(" -> ");
+const char* availabilityText(UbodAvailability availability) {
+    switch (availability) {
+        case UbodAvailability::Free:
+            return "FREE";
 
-    bool result = core.setName(value);
+        case UbodAvailability::Occupied:
+            return "OCCUPIED";
+    }
 
-    Serial.println(result ? "ACCEPTED" : "REJECTED");
+    return "UNKNOWN";
+}
 
-    Serial.print("Current name: \"");
+void printCore(const char* label, const UbodCore& core) {
+    Serial.print(label);
+    Serial.print(" | ID: ");
+    Serial.print(core.id());
+
+    Serial.print(" | Name: \"");
     Serial.print(core.name());
-    Serial.println("\"");
+    Serial.print("\"");
+
+    Serial.print(" | availability: ");
+    Serial.print(availabilityText(core.availability()));
+
+    Serial.print(" | state: ");
+
+    switch (core.state()) {
+        case UbodState::Initializing:
+            Serial.print("INITIALIZING");
+            break;
+
+        case UbodState::Ready:
+            Serial.print("READY");
+            break;
+
+        case UbodState::Running:
+            Serial.print("RUNNING");
+            break;
+
+        case UbodState::Released:
+            Serial.print("RELEASED");
+            break;
+
+        case UbodState::Invalid:
+            Serial.print("INVALID");
+            break;
+    }
+
+    Serial.println();
 }
 
 void setup() {
-  Serial.begin(115200);
-  delay(1000);
+    Serial.begin(115200);
+    delay(1000);
 
-  Serial.println();
-  Serial.println("==================================");
-  Serial.println("      UBOD v0.1.6 EXPERIMENT");
-  Serial.println("==================================");
-  Serial.println();
+    Serial.println();
+    Serial.println("==================================");
+    Serial.println("      UBOD v0.1.7 EXPERIMENT");
+    Serial.println("==================================");
+    Serial.println();
 
-  UbodCore core(1);
+    UbodCore coreA(1);
+    UbodCore coreB(2);
 
-  Serial.println("Name validation tests:");
-  Serial.println();
+    coreA.setName("primary");
+    coreB.setName("sensor");
 
-  testName(core, "Null name", nullptr);
-  testName(core, "Empty name", "");
-  testName(core, "Whitespace name", "   ");
-  testName(core, "Normal name", "primary");
-  testName(core, "Name with hyphen", "sensor-1");
-  testName(core, "Name with underscore", "core_A");
-  testName(core, "Numeric name", "123");
-  testName(core, "Name with spaces", "main core");
+    Serial.println("Initial availability:");
+    printCore("Core A", coreA);
+    printCore("Core B", coreB);
 
-  Serial.println();
-  Serial.println("Testing maximum length:");
+    Serial.println();
+    Serial.println("Occupying Core A:");
 
-  testName(core, "15-character name", "123456789012345");
-  testName(core, "16-character name", "9876543210987654");
+    Serial.print("Core A occupy(): ");
+    Serial.println(
+        coreA.occupy()
+            ? "SUCCESS"
+            : "FAILED"
+    );
 
-  Serial.println();
-  Serial.println("Testing duplicate names:");
+    printCore("Core A", coreA);
 
-  UbodCore coreB(2);
+    Serial.println();
+    Serial.println("Attempting to occupy Core A again:");
 
-  Serial.print("Core B -> \"primary\": ");
-  Serial.println(
-    coreB.setName("primary")
-      ? "ACCEPTED"
-      : "REJECTED"
-  );
-  core.setName("primary");
+    Serial.print("Core A occupy(): ");
+    Serial.println(
+        coreA.occupy()
+            ? "SUCCESS"
+            : "FAILED"
+    );
 
-  Serial.print("Core A current name: \"");
-  Serial.print(core.name());
-  Serial.println("\"");
+    printCore("Core A", coreA);
 
-  Serial.print("Core B current name: \"");
-  Serial.print(coreB.name());
-  Serial.println("\"");
+    Serial.println();
+    Serial.println("Freeing Core A:");
 
-  Serial.println();
-  Serial.println("Testing rename:");
+    Serial.print("Core A free(): ");
+    Serial.println(
+        coreA.free()
+            ? "SUCCESS"
+            : "FAILED"
+    );
 
-  testName(coreB, "Rename to diagnostic", "diagnostic");
+    printCore("Core A", coreA);
 
-  Serial.println();
-  Serial.println("Testing release behavior:");
+    Serial.println();
+    Serial.println("Attempting to free Core A again:");
 
-  coreB.begin();
-  coreB.update();
-  coreB.release();
+    Serial.print("Core A free(): ");
+    Serial.println(
+        coreA.free()
+            ? "SUCCESS"
+            : "FAILED"
+    );
 
-  Serial.print("Rename released Core B: ");
-  Serial.println(
-    coreB.setName("released")
-      ? "ACCEPTED"
-      : "REJECTED"
-  );
+    printCore("Core A", coreA);
 
-  Serial.print("Core B final name: \"");
-  Serial.print(coreB.name());
-  Serial.println("\"");
+    Serial.println();
+    Serial.println("Testing independent availability:");
 
-  Serial.println();
-  Serial.println("==================================");
-  Serial.println("      EXPERIMENT COMPLETE");
-  Serial.println("==================================");
+    coreA.occupy();
+
+    Serial.print("Core A: ");
+    Serial.println(availabilityText(coreA.availability()));
+
+    Serial.print("Core B: ");
+    Serial.println(availabilityText(coreB.availability()));
+
+    Serial.println();
+    Serial.println("Testing lifecycle separation:");
+
+    coreB.begin();
+
+    Serial.print("Core B state: ");
+    Serial.print(
+        coreB.state() == UbodState::Ready
+            ? "READY"
+            : "OTHER"
+    );
+
+    Serial.print(" | availability: ");
+    Serial.println(
+        availabilityText(coreB.availability())
+    );
+
+    Serial.println();
+    Serial.println("==================================");
+    Serial.println("      EXPERIMENT COMPLETE");
+    Serial.println("==================================");
 }
 
 void loop() {
