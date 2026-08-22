@@ -32,4 +32,6 @@ class UbodCore
         UbodState _state = UbodState::Initializing;
         unsigned long _startTime = 0;
         unsigned long _finalUptime = 0;
+
+        bool isNameValid(const char* name) const;
 };

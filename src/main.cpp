@@ -1,35 +1,21 @@
 #include <Arduino.h>
 #include "Ubod.h"
 
-void printCore(const char* label, const UbodCore& core) {
-  Serial.print(label);
-  Serial.print(" | ID: ");
-  Serial.print(core.id());
-  Serial.print(" | Name: \"");
-  Serial.print(core.name());
-  Serial.print("\" | valid: ");
-  Serial.print(core.isIdValid() ? "YES" : "NO");
-  Serial.print(" | state: ");
+void testName(
+    UbodCore& core,
+    const char* testName,
+    const char* value
+) {
+    Serial.print(testName);
+    Serial.print(" -> ");
 
-  switch (core.state()) {
-    case UbodState::Initializing:
-      Serial.print("INITIALIZING");
-      break;
-    case UbodState::Ready:
-      Serial.print("READY");
-      break;
-    case UbodState::Running:
-      Serial.print("RUNNING");
-      break;
-    case UbodState::Released:
-      Serial.print("RELEASED");
-      break;
-    case UbodState::Invalid:
-      Serial.print("INVALID");
-      break;
-  }
+    bool result = core.setName(value);
 
-  Serial.println();
+    Serial.println(result ? "ACCEPTED" : "REJECTED");
+
+    Serial.print("Current name: \"");
+    Serial.print(core.name());
+    Serial.println("\"");
 }
 
 void setup() {
@@ -38,78 +24,73 @@ void setup() {
 
   Serial.println();
   Serial.println("==================================");
-  Serial.println("      UBOD v0.1.5 EXPERIMENT");
+  Serial.println("      UBOD v0.1.6 EXPERIMENT");
   Serial.println("==================================");
   Serial.println();
 
-  UbodCore coreA(1);
-  UbodCore coreB(2);
-  UbodCore coreC(3);
+  UbodCore core(1);
 
-  Serial.println("Assigning names:");
+  Serial.println("Name validation tests:");
+  Serial.println();
 
-  Serial.print("Core A: ");
-  Serial.println(coreA.setName("primary") ? "SUCCESS" : "FAILED");
-
-  Serial.print("Core B: ");
-  Serial.println(coreB.setName("sensor") ? "SUCCESS" : "FAILED");
-
-  Serial.print("Core C: ");
-  Serial.println(coreC.setName("telemetry") ? "SUCCESS" : "FAILED");
+  testName(core, "Null name", nullptr);
+  testName(core, "Empty name", "");
+  testName(core, "Whitespace name", "   ");
+  testName(core, "Normal name", "primary");
+  testName(core, "Name with hyphen", "sensor-1");
+  testName(core, "Name with underscore", "core_A");
+  testName(core, "Numeric name", "123");
+  testName(core, "Name with spaces", "main core");
 
   Serial.println();
-  printCore("Core A", coreA);
-  printCore("Core B", coreB);
-  printCore("Core C", coreC);
+  Serial.println("Testing maximum length:");
+
+  testName(core, "15-character name", "123456789012345");
+  testName(core, "16-character name", "9876543210987654");
 
   Serial.println();
   Serial.println("Testing duplicate names:");
 
-  Serial.print("Core C -> \"primary\": ");
-  Serial.println(coreC.setName("primary") ? "SUCCESS" : "FAILED");
+  UbodCore coreB(2);
 
-  printCore("Core C", coreC);
+  Serial.print("Core B -> \"primary\": ");
+  Serial.println(
+    coreB.setName("primary")
+      ? "ACCEPTED"
+      : "REJECTED"
+  );
+  core.setName("primary");
+
+  Serial.print("Core A current name: \"");
+  Serial.print(core.name());
+  Serial.println("\"");
+
+  Serial.print("Core B current name: \"");
+  Serial.print(coreB.name());
+  Serial.println("\"");
 
   Serial.println();
   Serial.println("Testing rename:");
 
-  Serial.print("Core B -> \"diagnostic\": ");
-  Serial.println(coreB.setName("diagnostic") ? "SUCCESS" : "FAILED");
-
-  printCore("Core B", coreB);
+  testName(coreB, "Rename to diagnostic", "diagnostic");
 
   Serial.println();
-  Serial.println("Testing invalid long name:");
+  Serial.println("Testing release behavior:");
 
-  Serial.print("Core A -> long name: ");
+  coreB.begin();
+  coreB.update();
+  coreB.release();
+
+  Serial.print("Rename released Core B: ");
   Serial.println(
-    coreA.setName("this-name-is-way-too-long")
-      ? "SUCCESS"
-      : "FAILED"
+    coreB.setName("released")
+      ? "ACCEPTED"
+      : "REJECTED"
   );
 
-  printCore("Core A", coreA);
-
-  Serial.println();
-  Serial.println("Testing release:");
-
-  coreA.begin();
-  coreA.update();
-  coreA.release();
-
-  printCore("Core A", coreA);
-
-  Serial.println();
-  Serial.println("Attempting rename after release:");
-
-  Serial.print("Core A -> \"released\": ");
-  Serial.println(
-    coreA.setName("released")
-      ? "SUCCESS"
-      : "FAILED"
-  );
-
-  printCore("Core A", coreA);
+  Serial.print("Core B final name: \"");
+  Serial.print(coreB.name());
+  Serial.println("\"");
 
   Serial.println();
   Serial.println("==================================");

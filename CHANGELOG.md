@@ -1,4 +1,23 @@
 # Changelog
+## [0.1.6] — Pagpapatibay ng Pangalan ng Ubod (*Core Name Validation*)
+### Idinagdag
+- Nagdagdag ng validation para sa Core Name.
+- Tinatanggihan ang `nullptr`, empty string, at whitespace-only names.
+- Nililimitahan ang Core Name sa maximum na 15 character.
+- Pinapayagan ang spaces, hyphens, underscores, at numeric names.
+- Pinapayagan ang magkaparehong Core Name sa magkakaibang Core Slot.
+### Binago
+- Ang invalid na bagong pangalan ay hindi nakapagbabago nsa kasalukuyang valid na pangalan.
+- Pinananatili ang kasalukuyang Core Name kapag `RELEASED` ang Core.
+- Hindi maaaring magpalit ng pangalan ang isang released Core.
+### Tala
+- Normal naming.
+- Empty at whitespace-only names.
+- Maximum name length.
+- Duplicate names.
+- Core renaming.
+- Name retention pagkatapos ng `release()`.
+
 ## [0.1.5] — Pagpapangalan sa Puwang ng Ubod (*Core Slot Naming*)
 ### Idinagdag
 - Nagdagdag ng human-readable name para sa bawat Core Slot.
