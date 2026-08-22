@@ -157,20 +157,30 @@ UbodCore* UbodContainer::findFree() {
     return nullptr;
 }
 
-UbodCore* UbodContainer::findByName(const char* name) {
-    if (name == nullptr) { return nullptr; }
+unsigned int UbodContainer::findByName(const char* name, UbodCore** results, unsigned int maxResults) {
+    if (name == nullptr || results == nullptr || maxResults == 0) { return 0; }
+    unsigned int foundCount = 0;
     for (unsigned int i = 0; i < Capacity; ++i) {
-        if (strcmp(_cores[i].name(), name) == 0) { return &_cores[i]; }
+        if (strcmp(_cores[i].name(), name) == 0) {
+            if (foundCount >= maxResults) { break; }
+            results[foundCount] = &_cores[i];
+            ++foundCount;
+        }
     }
-    return nullptr;
+    return foundCount;
 }
 
-const UbodCore* UbodContainer::findByName(const char* name) const {
-    if (name == nullptr) { return nullptr; }
+unsigned int UbodContainer::findByName(const char* name, const UbodCore** results, unsigned int maxResults) const {
+    if (name == nullptr || results == nullptr || maxResults == 0) { return 0; }
+    unsigned int foundCount = 0;
     for (unsigned int i = 0; i < Capacity; ++i) {
-        if (strcmp(_cores[i].name(), name) == 0) { return &_cores[i]; }
+        if (strcmp(_cores[i].name(), name) == 0) {
+            if (foundCount >= maxResults) { break; }
+            results[foundCount] = &_cores[i];
+            ++foundCount;
+        }
     }
-    return nullptr;
+    return foundCount;
 }
 
 unsigned int UbodContainer::capacity() const {

@@ -1,88 +1,43 @@
 #include <Arduino.h>
+#include <cstring>
 #include "Ubod.h"
 
-void printCore(const char* label, const UbodCore* core) {
-    Serial.print(label);
-
+void printCore(const UbodCore* core) {
     if (core == nullptr) {
-        Serial.println("NOT FOUND");
+        Serial.println("  nullptr");
         return;
     }
 
-    Serial.print("ID: ");
+    Serial.print("  ID: ");
     Serial.print(core->id());
     Serial.print(" | Name: \"");
     Serial.print(core->name());
-    Serial.print("\" | availability: ");
-
-    if (core->isFree()) {
-        Serial.println("FREE");
-    } else {
-        Serial.println("OCCUPIED");
-    }
-}
-
-void printContainer(UbodContainer& container) {
-    Serial.println();
-    Serial.print("Capacity: ");
-    Serial.println(container.capacity());
-
-    Serial.print("Used: ");
-    Serial.println(container.used());
-
-    Serial.print("Free: ");
-    Serial.println(container.free());
-
-    for (unsigned int id = 1; id <= container.capacity(); ++id) {
-        const UbodCore* core = container.get(id);
-
-        Serial.print("Slot | ID: ");
-        Serial.print(core->id());
-        Serial.print(" | Name: \"");
-        Serial.print(core->name());
-        Serial.print("\" | availability: ");
-
-        if (core->isFree()) {
-            Serial.println("FREE");
-        } else {
-            Serial.println("OCCUPIED");
-        }
-    }
-}
-
-void findAllByName(UbodContainer& container, const char* name) {
-    Serial.print("Searching for name: \"");
-    Serial.print(name);
     Serial.println("\"");
+}
 
-    unsigned int foundCount = 0;
+void printMatches(
+    const char* name,
+    UbodCore** results,
+    unsigned int count
+) {
+    Serial.print("Matches for \"");
+    Serial.print(name);
+    Serial.println("\":");
 
-    for (unsigned int id = 1; id <= container.capacity(); ++id) {
-        const UbodCore* core = container.get(id);
-
-        if (core == nullptr) {
-            continue;
-        }
-
-        if (strcmp(core->name(), name) == 0) {
-            ++foundCount;
-
-            Serial.print("Found #");
-            Serial.print(foundCount);
-            Serial.print(" | ID: ");
-            Serial.print(core->id());
-            Serial.print(" | Name: \"");
-            Serial.print(core->name());
-            Serial.println("\"");
-        }
+    if (count == 0) {
+        Serial.println("  NONE");
+        return;
     }
 
-    if (foundCount == 0) {
-        Serial.println("No matching Core Slots found.");
-    } else {
-        Serial.print("Total matches: ");
-        Serial.println(foundCount);
+    for (unsigned int i = 0; i < count; ++i) {
+        Serial.print("  #");
+        Serial.print(i + 1);
+        Serial.print(" -> ");
+        printCore(results[i]);
     }
+
+    Serial.print("Total matches: ");
+    Serial.println(count);
 }
 
 void setup() {
@@ -95,116 +50,130 @@ void setup() {
 
     UbodContainer container;
 
-    Serial.println();
-    Serial.println("Initial container status:");
-    printContainer(container);
-
-    Serial.println();
-    Serial.println("Assigning Core Names:");
-
-    Serial.println(
-        container.get(1)->setName("comms")
-            ? "Core 1: SUCCESS"
-            : "Core 1: FAILED"
-    );
-
-    Serial.println(
-        container.get(2)->setName("sensor")
-            ? "Core 2: SUCCESS"
-            : "Core 2: FAILED"
-    );
-
-    Serial.println(
-        container.get(3)->setName("sensor")
-            ? "Core 3: SUCCESS"
-            : "Core 3: FAILED"
-    );
-
-    Serial.println(
-        container.get(4)->setName("telemetry")
-            ? "Core 4: SUCCESS"
-            : "Core 4: FAILED"
-    );
-
-    Serial.println();
-    Serial.println("Container after naming:");
-    printContainer(container);
-
     // --------------------------------------------------
-    // First-match lookup
+    // Assign names
     // --------------------------------------------------
 
-    Serial.println();
-    Serial.println("Testing findByName() first-match behavior:");
-
-    const UbodCore* core = container.findByName("sensor");
-
-    printCore("findByName(\"sensor\") -> ", core);
-
-    // --------------------------------------------------
-    // Find all matching names
-    // --------------------------------------------------
+    container.get(1)->setName("comms");
+    container.get(2)->setName("sensor");
+    container.get(3)->setName("sensor");
+    container.get(4)->setName("telemetry");
 
     Serial.println();
-    Serial.println("Testing duplicate-name discovery:");
+    Serial.println("Assigned names:");
 
-    findAllByName(container, "sensor");
+    for (unsigned int id = 1; id <= container.capacity(); ++id) {
+        const UbodCore* core = container.get(id);
+
+        Serial.print("Core ");
+        Serial.print(id);
+        Serial.print(" | Name: \"");
+        Serial.print(core->name());
+        Serial.println("\"");
+    }
+
+    // --------------------------------------------------
+    // Multiple-match search
+    // --------------------------------------------------
+
+    UbodCore* results[UbodContainer::Capacity] = {};
+
+    Serial.println();
+    Serial.println("Searching for \"sensor\"...");
+
+    unsigned int count =
+        container.findByName(
+            "sensor",
+            results,
+            UbodContainer::Capacity
+        );
+
+    printMatches("sensor", results, count);
+
+    // --------------------------------------------------
+    // Search with smaller result buffer
+    // --------------------------------------------------
+
+    UbodCore* limitedResults[1] = {};
+
+    Serial.println();
+    Serial.println("Searching for \"sensor\" with maxResults = 1...");
+
+    count =
+        container.findByName(
+            "sensor",
+            limitedResults,
+            1
+        );
+
+    printMatches("sensor", limitedResults, count);
 
     // --------------------------------------------------
     // Missing name
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("Testing missing name:");
+    Serial.println("Searching for \"control\"...");
 
-    core = container.findByName("control");
+    count =
+        container.findByName(
+            "control",
+            results,
+            UbodContainer::Capacity
+        );
 
-    printCore("findByName(\"control\") -> ", core);
-
-    // --------------------------------------------------
-    // Null name
-    // --------------------------------------------------
-
-    Serial.println();
-    Serial.println("Testing null name:");
-
-    core = container.findByName(nullptr);
-
-    printCore("findByName(nullptr) -> ", core);
+    printMatches("control", results, count);
 
     // --------------------------------------------------
-    // Availability independence
+    // nullptr protection
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("Testing lookup independent of availability:");
+    Serial.println("Testing nullptr name:");
 
-    container.occupy(2);
+    count =
+        container.findByName(
+            nullptr,
+            results,
+            UbodContainer::Capacity
+        );
 
-    core = container.findByName("sensor");
-
-    printCore("Occupied sensor -> ", core);
-
-    // --------------------------------------------------
-    // Free one duplicate
-    // --------------------------------------------------
-
-    Serial.println();
-    Serial.println("Freeing Core 2:");
-
-    Serial.println(
-        container.free(2)
-            ? "Core 2 free(): SUCCESS"
-            : "Core 2 free(): FAILED"
-    );
+    Serial.print("Result count: ");
+    Serial.println(count);
 
     // --------------------------------------------------
-    // Final status
+    // nullptr result buffer
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("Final container status:");
-    printContainer(container);
+    Serial.println("Testing nullptr result buffer:");
+
+    count =
+        container.findByName(
+            "sensor",
+            nullptr,
+            UbodContainer::Capacity
+        );
+
+    Serial.print("Result count: ");
+    Serial.println(count);
+
+    // --------------------------------------------------
+    // Zero result capacity
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("Testing maxResults = 0:");
+
+    count =
+        container.findByName(
+            "sensor",
+            results,
+            0
+        );
+
+    Serial.print("Result count: ");
+    Serial.println(count);
 
     Serial.println();
     Serial.println("==================================");

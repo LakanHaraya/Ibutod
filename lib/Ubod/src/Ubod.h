@@ -61,8 +61,8 @@ class UbodContainer {
         bool occupy(unsigned int id);
         bool free(unsigned int id);
         UbodCore* findFree();
-        UbodCore* findByName(const char* name);
-        const UbodCore* findByName(const char* name) const;
+        unsigned int findByName(const char* name, UbodCore** results, unsigned int maxResults);
+        unsigned int findByName(const char* name, const UbodCore** results, unsigned int maxResults) const;
         unsigned int capacity() const;
         unsigned int used() const;
         unsigned int free() const;
