@@ -1,6 +1,15 @@
 #include <Arduino.h>
 #include "Ubod.h"
 
+UbodCore::UbodCore() : 
+    _id(0), 
+    _idValid(false), 
+    _state(UbodState::Invalid), 
+    _startTime(0), 
+    _finalUptime(0) { 
+        // Default constructor is private to prevent creating UbodCore without a valid ID
+    }
+
 UbodCore::UbodCore(unsigned int id) : _id(id) {
     _idValid = (_id > 0);
     if (!_idValid) { _state = UbodState::Invalid; }
@@ -112,12 +121,11 @@ unsigned long UbodCore::uptime() const {
     return millis() - _startTime;
 }
 
-UbodContainer::UbodContainer(): _cores{
-    UbodCore(1),
-    UbodCore(2),
-    UbodCore(3),
-    UbodCore(4)
-} { }
+UbodContainer::UbodContainer() {
+    for (unsigned int i = 0; i < Capacity; ++i) {
+        _cores[i] = UbodCore(i + 1);
+    }
+}
 
 UbodCore* UbodContainer::get(unsigned int id) {
     if (id == 0 || id > Capacity) { return nullptr; }

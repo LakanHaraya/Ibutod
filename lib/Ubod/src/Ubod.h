@@ -38,6 +38,8 @@ class UbodCore
         unsigned long uptime() const;
 
     private:
+        friend class UbodContainer;
+        UbodCore();
         unsigned int _id;
         static constexpr unsigned int MaxNameLength = 15;
         char _name[MaxNameLength + 1] = {};
@@ -46,13 +48,13 @@ class UbodCore
         UbodState _state = UbodState::Initializing;
         unsigned long _startTime = 0;
         unsigned long _finalUptime = 0;
-
         bool isNameValid(const char* name) const;
 };
 
 class UbodContainer {
     public: 
         static constexpr unsigned int Capacity = 4;
+        static_assert(Capacity >= 2 && Capacity <= 32, "UbodContainer Capacity must be between 2 and 32.");
         UbodContainer();
         UbodCore* get(unsigned int id);
         const UbodCore* get(unsigned int id) const;

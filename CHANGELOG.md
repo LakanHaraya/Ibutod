@@ -1,4 +1,27 @@
 # Changelog
+## [0.1.8] — Estatikong Kumpulan ng Puwang ng Ubod (*Static Core Slot Pool*)
+### Idinagdag
+- Idinagdag ang `UbodContainer` para sa pamamahala ng mga Core Slot.
+- Idinagdag ang static Core Slot pool na may compile-time `Capacity`.
+- Idinagdag ang awtomatikong pagbuo ng sequential Core Slot IDs batay sa `Capacity`.
+- Itinakda ang pinapayagang `Capacity` mula sa 2 hanggang 32 Core Slots.
+- Idinagdag ang pagkuha ng libreng Core Slot gamit ang `findFree()`.
+### Binago
+- Inalis ang hard-coded na apat na Core Slot sa `UbodContainer`.
+- Ginawang iisang source of truth ang `Capacity` para sa bilang ng Core Slots.
+- Pinanatili ang static memory allocation; walang dynamic memory allocation para sa Core Slot pool.
+### Sinubukan
+- Sinubukan ang static container sa iba't ibang `Capacity`.
+- Sinbukan ang pag-occupy at pag-free ng mga Core Slot.
+- Sinubukan ang paghahanap ng libreng Slot kapag may available at kapag puno na ang container.
+- Sinubukan ang invalid Core Slot ID lookup.
+- Sinubukan ang compile-time restriction ng `Capacity`.
+### Tala
+- Ang `UbodContainer` ay kasalukuyang nakatuon sa MCU/device scope.
+- Ang `Capacity` ay itinatakda sa compile time at hindi binabago sa runtime.
+- Ang kasalukuyang experimental limit ay 2–32 Core Slots.
+- Hindi pa kabilang sa bersiyong ito ang Core engine assignment.
+
 ## [0.1.7] — Pagkakaroon ng Puwang ng Ubod (*Core Slot Availability*)
 ### Idinagdag
 - Idinagdag ang `UbodAvailabaility` para sa kalagayan ng Core Slot.
