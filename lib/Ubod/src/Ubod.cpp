@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "Ubod.h"
+#include <cstring>
 
 UbodCore::UbodCore() : 
     _id(0), 
@@ -152,6 +153,22 @@ bool UbodContainer::free(unsigned int id) {
 UbodCore* UbodContainer::findFree() {
     for (unsigned int i = 0; i < Capacity; ++i) {
         if (_cores[i].isFree()) { return &_cores[i]; }
+    }
+    return nullptr;
+}
+
+UbodCore* UbodContainer::findByName(const char* name) {
+    if (name == nullptr) { return nullptr; }
+    for (unsigned int i = 0; i < Capacity; ++i) {
+        if (strcmp(_cores[i].name(), name) == 0) { return &_cores[i]; }
+    }
+    return nullptr;
+}
+
+const UbodCore* UbodContainer::findByName(const char* name) const {
+    if (name == nullptr) { return nullptr; }
+    for (unsigned int i = 0; i < Capacity; ++i) {
+        if (strcmp(_cores[i].name(), name) == 0) { return &_cores[i]; }
     }
     return nullptr;
 }
