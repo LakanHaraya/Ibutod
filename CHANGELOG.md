@@ -1,4 +1,25 @@
 # Changelog
+
+## [0.1.9] — API ng Operasyon sa Puwang ng Ubod (*Core Slot Operation API*)
+### Idinagdag 
+- Idinagdag ang `UbodContainer::occupy(id)` para sa ligtas na pag-okupa ng Core Slot.
+- Idinagdag ang `UbodContainer::free(id)` para sa pagpapalaya ng Core Slot.
+- Ginawang gatekeeper ang `UbodContainer` para sa mga operasyon sa Core Slot.
+- Idinagdag ang proteksiyon laban sa invalid o lampas-sa-kapasidad na Core Slot ID.
+### Binago
+- Inirerekomenda ang paggamit ng `UbodContainer` operation API sa halip na direktang pagmamanipula ng `UbodCore`.
+- Pinanatili ang static memory allocation at compile-time Core Slot capacity.
+### Sinubukan
+- Sinubukan ang matagumpay na pag-okupa ng valid na Core Slot.
+- Sinubukan ang muling pag-okupa ng `OCCUPIED` na Core Slot.
+- Sinubukan ang pagpapalaya ng `OCCUPIED` na Core Slot.
+- Sinubukan ang muling pagpapalaya ng `FREE` na Core Slot.
+- Sinubukan ang invalid at lampas-sa-kapasidad na Core Slot ID.
+### Tala
+- Ang `UbodContainer` ang nagsisilbing gatekeeper ng Core Slot operations.
+- Ang `Core Engine` assignment ay hindi pa kabilang sa bersiyong ito.
+- Ang dynamic memory allocation at runtime capacity resizing ay hindi pa sinusuportahan.
+
 ## [0.1.8] — Estatikong Kumpulan ng Puwang ng Ubod (*Static Core Slot Pool*)
 ### Idinagdag
 - Idinagdag ang `UbodContainer` para sa pamamahala ng mga Core Slot.

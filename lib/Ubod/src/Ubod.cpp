@@ -137,6 +137,18 @@ const UbodCore* UbodContainer::get(unsigned int id) const {
     return &_cores[id - 1];
 }
 
+bool UbodContainer::occupy(unsigned int id) {
+    UbodCore* core = get(id);
+    if (core == nullptr) { return false; }
+    return core->occupy();
+}
+
+bool UbodContainer::free(unsigned int id) {
+    UbodCore* core = get(id);
+    if (core == nullptr) { return false; }
+    return core->free();
+}
+
 UbodCore* UbodContainer::findFree() {
     for (unsigned int i = 0; i < Capacity; ++i) {
         if (_cores[i].isFree()) { return &_cores[i]; }

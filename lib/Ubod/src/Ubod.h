@@ -53,11 +53,13 @@ class UbodCore
 
 class UbodContainer {
     public: 
-        static constexpr unsigned int Capacity = 4;
+        static constexpr unsigned int Capacity = 2;
         static_assert(Capacity >= 2 && Capacity <= 32, "UbodContainer Capacity must be between 2 and 32.");
         UbodContainer();
         UbodCore* get(unsigned int id);
         const UbodCore* get(unsigned int id) const;
+        bool occupy(unsigned int id);
+        bool free(unsigned int id);
         UbodCore* findFree();
         unsigned int capacity() const;
         unsigned int used() const;
