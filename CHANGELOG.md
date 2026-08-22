@@ -1,4 +1,24 @@
 # Changelog
+## [0.1.10] — Pagtuklas at Paghahanap ng Puwang ng Ubod (*Core Slot Dicovery and Lookup*)
+### Idinagdag
+- Idinagdag ang `findByName()` para sa paghahanap ng Core Slots batay sa Core Name.
+- Sinusuportahan ang maramihang Core Slots na may magkakaparehong pangalan.
+- Gumagamit ng caller-owned fixed result buffer para sa mga resulta.
+- Nililimitahan ang bilang ng resulta ayon sa `maxResults`.
+- Nanatiling static at bounded ang memory; walang dynamic memory allocation.
+### Sinubukan 
+- Paghahanap ng dalawang Core Slots na may parehong pangalan.
+- Paghahanap na may `maxResults = 1`.
+- Paghahanap ng pangalang walang katugma.
+- `nullptr` na pangalan.
+- `nullptr` na result buffer.
+- `maxResults = 0`.
+### Tala
+- Ang Core Name ay hindi kailangang unique sa loob ng `UbodContainer`.
+- Ang mga resulta ay ibinibigay sa caller-owned buffer; hindi nag-allocate ng result sa memory ang Ubod.
+- Ang mga resulta ay ibinabalik ayon sa pagkakasunod ng Core Slot ID.
+- Hindi muna idinagdag ang `findAllByName()` API.
+
 
 ## [0.1.9] — API ng Operasyon sa Puwang ng Ubod (*Core Slot Operation API*)
 ### Idinagdag 
