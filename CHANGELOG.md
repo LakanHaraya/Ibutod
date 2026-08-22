@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.1.3] — Pagkakakilanlan ng Instansiya at Pamamahala ng Ikot-Buhay (*Instance Identity and Lifecycle Control*) 
+
 ## [0.1.2] — Estado ng Pagtakbo ng Instansiya (*Instance Runtime State*)
 ### Idinagdag
 - Nagdagdag ng `UbodState` para sa lifecycle ng bawat `UbodCore` instance.

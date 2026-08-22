@@ -1,8 +1,9 @@
 #include <Arduino.h>
 #include <Ubod.h>
 
-UbodCore coreA;
-UbodCore coreB;
+UbodCore coreA(1);
+UbodCore coreB(2);
+UbodCore coreC(1);
 
 void setup() {
   Serial.begin(115200);
@@ -10,57 +11,68 @@ void setup() {
   delay(1000); // Wait for Serial to initialize
 
   Serial.println("==================================");
-  Serial.println("      UBOD v0.1.2 EXPERIMENT      ");
+  Serial.println("      UBOD v0.1.3 EXPERIMENT      ");
   Serial.println("==================================");
 
-  Serial.println("Core A: initial state:");
-  Serial.println("Core B: initial state:");
-  
-  coreA.begin();
+  Serial.print("Core A ID: ");
+  Serial.print(coreA.id());
+  Serial.print(" | valid: ");
+  Serial.println(coreA.isIdValid() ? "YES" : "NO");
 
-  Serial.println("Core A: begin()");
-  Serial.print("Core A state: ");
+  Serial.print("Core B ID: ");
+  Serial.print(coreB.id());
+  Serial.print(" | valid: ");
+  Serial.println(coreB.isIdValid() ? "YES" : "NO");
+
+  Serial.print("Core C ID: ");
+  Serial.print(coreC.id());
+  Serial.print(" | valid: ");
+  Serial.println(coreC.isIdValid() ? "YES" : "NO");
+
+  coreA.begin();
+  coreB.begin();
+  coreC.begin();
+
+  Serial.println();
+  Serial.println("Post-begin state:");
+
+  Serial.print("Core A: ");
   Serial.println(
-    coreA.state() == UbodState::Ready ? "READY" : "OTHER"
+    coreA.state() == UbodState::Ready ? "READY" : "NOT READY"
   );
 
-  // Mahalagang eksperimento: 
-  // Isang segundo ang pagitan ng inisyalisasyon ng `coreA` at `coreB`.
-  delay(1000);
-
-  coreB.begin();
-
-  Serial.println("Core B: begin()");
-  Serial.print("Core B state: ");
+  Serial.print("Core B: ");
   Serial.println(
-    coreB.state() == UbodState::Ready ? "READY" : "OTHER"
+    coreB.state() == UbodState::Ready ? "READY" : "NOT READY"
+  );
+
+  Serial.print("Core C: ");
+  Serial.println(
+    coreC.state() == UbodState::Ready ? "READY" : "NOT READY"
   );
 }
 
 void loop() {
   coreA.update();
+  coreB.update();
+  coreC.update();
 
-  static unsigned long lastPrint = 0;
+  Serial.println("");
 
-  if (millis() - lastPrint >= 1000 ){
-    lastPrint = millis();
+  Serial.print("Core A state: ");
+  Serial.println(
+    coreA.state() == UbodState::Running ? "RUNNING" : "OTHER"
+  );
 
-    coreB.update();
+  Serial.print("Core B state: ");
+  Serial.println(
+    coreB.state() == UbodState::Running ? "RUNNING" : "OTHER"
+  );
 
-    Serial.println("");
+  Serial.print("Core C state: ");
+  Serial.println(
+    coreC.state() == UbodState::Running ? "RUNNING" : "OTHER"
+  );
 
-    Serial.print("Core A uptime: ");
-    Serial.print(coreA.uptime());
-    Serial.print(" ms | state: ");
-    Serial.println(
-      coreA.state() == UbodState::Running ? "RUNNING" : "OTHER"
-    );
-
-    Serial.print("Core B uptime: ");
-    Serial.print(coreB.uptime());
-    Serial.print(" ms | state: ");
-    Serial.println(
-      coreB.state() == UbodState::Running ? "RUNNING" : "OTHER"
-    );
-  }
+  delay(1000);
 }
