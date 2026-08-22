@@ -13,43 +13,39 @@ const char* availabilityText(UbodAvailability availability) {
     return "UNKNOWN";
 }
 
-void printCore(const char* label, const UbodCore& core) {
+void printCore(const char* label, const UbodCore* core) {
     Serial.print(label);
+
+    if (core == nullptr) {
+        Serial.println(" -> NOT FOUND");
+        return;
+    }
+
     Serial.print(" | ID: ");
-    Serial.print(core.id());
+    Serial.print(core->id());
 
     Serial.print(" | Name: \"");
-    Serial.print(core.name());
+    Serial.print(core->name());
     Serial.print("\"");
 
     Serial.print(" | availability: ");
-    Serial.print(availabilityText(core.availability()));
+    Serial.println(availabilityText(core->availability()));
+}
 
-    Serial.print(" | state: ");
-
-    switch (core.state()) {
-        case UbodState::Initializing:
-            Serial.print("INITIALIZING");
-            break;
-
-        case UbodState::Ready:
-            Serial.print("READY");
-            break;
-
-        case UbodState::Running:
-            Serial.print("RUNNING");
-            break;
-
-        case UbodState::Released:
-            Serial.print("RELEASED");
-            break;
-
-        case UbodState::Invalid:
-            Serial.print("INVALID");
-            break;
-    }
-
+void printContainerStatus(const UbodContainer& container) {
     Serial.println();
+    Serial.print("Capacity: ");
+    Serial.println(container.capacity());
+
+    Serial.print("Used: ");
+    Serial.println(container.used());
+
+    Serial.print("Free: ");
+    Serial.println(container.free());
+
+    for (unsigned int id = 1; id <= container.capacity(); ++id) {
+        printCore("Slot", container.get(id));
+    }
 }
 
 void setup() {
@@ -58,95 +54,75 @@ void setup() {
 
     Serial.println();
     Serial.println("==================================");
-    Serial.println("      UBOD v0.1.7 EXPERIMENT");
+    Serial.println("      UBOD v0.1.8 EXPERIMENT");
     Serial.println("==================================");
-    Serial.println();
 
-    UbodCore coreA(1);
-    UbodCore coreB(2);
-
-    coreA.setName("primary");
-    coreB.setName("sensor");
-
-    Serial.println("Initial availability:");
-    printCore("Core A", coreA);
-    printCore("Core B", coreB);
+    UbodContainer container;
 
     Serial.println();
-    Serial.println("Occupying Core A:");
-
-    Serial.print("Core A occupy(): ");
-    Serial.println(
-        coreA.occupy()
-            ? "SUCCESS"
-            : "FAILED"
-    );
-
-    printCore("Core A", coreA);
+    Serial.println("Initial container status:");
+    printContainerStatus(container);
 
     Serial.println();
-    Serial.println("Attempting to occupy Core A again:");
+    Serial.println("Occupying Core 1 and Core 2...");
 
-    Serial.print("Core A occupy(): ");
-    Serial.println(
-        coreA.occupy()
-            ? "SUCCESS"
-            : "FAILED"
-    );
+    container.get(1)->occupy();
+    container.get(2)->occupy();
 
-    printCore("Core A", coreA);
+    printContainerStatus(container);
 
     Serial.println();
-    Serial.println("Freeing Core A:");
+    Serial.println("Finding free slot...");
 
-    Serial.print("Core A free(): ");
-    Serial.println(
-        coreA.free()
-            ? "SUCCESS"
-            : "FAILED"
-    );
+    UbodCore* freeCore = container.findFree();
 
-    printCore("Core A", coreA);
+    printCore("Found", freeCore);
 
-    Serial.println();
-    Serial.println("Attempting to free Core A again:");
-
-    Serial.print("Core A free(): ");
-    Serial.println(
-        coreA.free()
-            ? "SUCCESS"
-            : "FAILED"
-    );
-
-    printCore("Core A", coreA);
+    if (freeCore != nullptr) {
+        freeCore->occupy();
+    }
 
     Serial.println();
-    Serial.println("Testing independent availability:");
-
-    coreA.occupy();
-
-    Serial.print("Core A: ");
-    Serial.println(availabilityText(coreA.availability()));
-
-    Serial.print("Core B: ");
-    Serial.println(availabilityText(coreB.availability()));
+    Serial.println("After occupying discovered slot:");
+    printContainerStatus(container);
 
     Serial.println();
-    Serial.println("Testing lifecycle separation:");
+    Serial.println("Testing invalid ID lookup:");
 
-    coreB.begin();
+    printCore("ID 0", container.get(0));
+    printCore("ID 5", container.get(5));
 
-    Serial.print("Core B state: ");
-    Serial.print(
-        coreB.state() == UbodState::Ready
-            ? "READY"
-            : "OTHER"
-    );
+    Serial.println();
+    Serial.println("Occupying remaining free slot...");
 
-    Serial.print(" | availability: ");
-    Serial.println(
-        availabilityText(coreB.availability())
-    );
+    freeCore = container.findFree();
+
+    if (freeCore != nullptr) {
+        freeCore->occupy();
+    }
+
+    printContainerStatus(container);
+
+    Serial.println();
+    Serial.println("Searching when all slots are occupied:");
+
+    freeCore = container.findFree();
+
+    printCore("Found", freeCore);
+
+    Serial.println();
+    Serial.println("Freeing Core 2...");
+
+    container.get(2)->free();
+
+    printContainerStatus(container);
+
+    Serial.println();
+    Serial.println("Finding free slot again:");
+
+    freeCore = container.findFree();
+
+    printCore("Found", freeCore);
 
     Serial.println();
     Serial.println("==================================");

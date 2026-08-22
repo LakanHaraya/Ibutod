@@ -49,3 +49,18 @@ class UbodCore
 
         bool isNameValid(const char* name) const;
 };
+
+class UbodContainer {
+    public: 
+        static constexpr unsigned int Capacity = 4;
+        UbodContainer();
+        UbodCore* get(unsigned int id);
+        const UbodCore* get(unsigned int id) const;
+        UbodCore* findFree();
+        unsigned int capacity() const;
+        unsigned int used() const;
+        unsigned int free() const;
+
+    private:
+        UbodCore _cores[Capacity];
+};

@@ -1,43 +1,14 @@
 #include <Arduino.h>
 #include "Ubod.h"
 
-namespace {
-    constexpr unsigned int MaxUbodInstances = 8;
-    unsigned int registeredIds[MaxUbodInstances] = {};
-    unsigned int registeredCount = 0;
-
-    void unregisterId(unsigned int id) {
-        for (unsigned int i = 0; i < registeredCount; ++i) {
-            if (registeredIds[i] == id) {
-                registeredIds[i] = registeredIds[registeredCount - 1];
-                --registeredCount;
-                return;
-            }
-        }
-    }
-}
-
 UbodCore::UbodCore(unsigned int id) : _id(id) {
-    for (unsigned int i = 0; i < registeredCount; ++i) {
-        if (registeredIds[i] == _id) {
-            _idValid = false;
-            _state = UbodState::Invalid;
-            return;
-        }
-    }
-
-    if (registeredCount < MaxUbodInstances) {
-        registeredIds[registeredCount] = _id;
-        ++registeredCount;
-        _idValid = true;
-    }
+    _idValid = (_id > 0);
+    if (!_idValid) { _state = UbodState::Invalid; }
 }
 
 void UbodCore::release() {
     if (!_idValid) { return; }
-
     _finalUptime = millis() - _startTime;
-    unregisterId(_id);
     _idValid = false;
     _state = UbodState::Released;
 }
@@ -133,11 +104,50 @@ bool UbodCore::isReady() const {
     return _state == UbodState::Ready;
 }
 
-// Get the uptime of the UbodCore
 unsigned long UbodCore::uptime() const {
     if (_state == UbodState::Released) {
         return _finalUptime;
     }
 
     return millis() - _startTime;
+}
+
+UbodContainer::UbodContainer(): _cores{
+    UbodCore(1),
+    UbodCore(2),
+    UbodCore(3),
+    UbodCore(4)
+} { }
+
+UbodCore* UbodContainer::get(unsigned int id) {
+    if (id == 0 || id > Capacity) { return nullptr; }
+    return &_cores[id - 1];
+}
+
+const UbodCore* UbodContainer::get(unsigned int id) const {
+    if (id == 0 || id > Capacity) { return nullptr; }
+    return &_cores[id - 1];
+}
+
+UbodCore* UbodContainer::findFree() {
+    for (unsigned int i = 0; i < Capacity; ++i) {
+        if (_cores[i].isFree()) { return &_cores[i]; }
+    }
+    return nullptr;
+}
+
+unsigned int UbodContainer::capacity() const {
+    return Capacity;
+}
+
+unsigned int UbodContainer::used() const {
+    unsigned int count = 0;
+    for (unsigned int i = 0; i < Capacity; ++i) {
+        if (_cores[i].isOccupied()) { ++count; }
+    }
+    return count;
+}
+
+unsigned int UbodContainer::free() const {
+    return Capacity - used();
 }
