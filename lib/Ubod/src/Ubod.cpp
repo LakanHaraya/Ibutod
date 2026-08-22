@@ -50,7 +50,23 @@ bool UbodCore::isIdValid() const {
     return _idValid;
 }
 
-// Initialize the UbodCore
+bool UbodCore::setName(const char* name) {
+    if (!_idValid || _state == UbodState::Released) { return false; }
+    if (name == nullptr) { return false; }
+    unsigned int i = 0;
+    while (name[i] != '\0' && i < MaxNameLength) {
+        ++i;
+    }
+    if (name[i] != '\0') { return false; }
+    for (unsigned int j = 0; j < i; ++j) { _name[j] = name[j]; }
+    _name[i] = '\0';
+    return true;
+}
+
+const char* UbodCore::name() const {
+    return _name;
+}
+
 void UbodCore::begin() {
     if (!_idValid || _state == UbodState::Released) { return; }
 

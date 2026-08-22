@@ -1,139 +1,115 @@
 #include <Arduino.h>
-#include <Ubod.h>
+#include "Ubod.h"
 
-UbodCore coreA(1);
-UbodCore coreB(2);
-UbodCore coreC(1);
-
-void printState(const char* name, const UbodCore& core)
-{
-  Serial.print(name);
+void printCore(const char* label, const UbodCore& core) {
+  Serial.print(label);
   Serial.print(" | ID: ");
   Serial.print(core.id());
-  Serial.print(" | ID valid: ");
+  Serial.print(" | Name: \"");
+  Serial.print(core.name());
+  Serial.print("\" | valid: ");
   Serial.print(core.isIdValid() ? "YES" : "NO");
   Serial.print(" | state: ");
 
-  switch (core.state())
-  {
+  switch (core.state()) {
     case UbodState::Initializing:
       Serial.print("INITIALIZING");
       break;
-
     case UbodState::Ready:
       Serial.print("READY");
       break;
-
     case UbodState::Running:
       Serial.print("RUNNING");
       break;
-
     case UbodState::Released:
       Serial.print("RELEASED");
       break;
-
     case UbodState::Invalid:
       Serial.print("INVALID");
       break;
   }
 
-  Serial.print(" | uptime: ");
-  Serial.print(core.uptime());
-  Serial.println(" ms");
+  Serial.println();
 }
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
-
   delay(1000);
 
   Serial.println();
   Serial.println("==================================");
-  Serial.println("      UBOD v0.1.4 EXPERIMENT");
+  Serial.println("      UBOD v0.1.5 EXPERIMENT");
   Serial.println("==================================");
+  Serial.println();
 
-  // --------------------------------------------------
-  // 1. Identity validation
-  // --------------------------------------------------
+  UbodCore coreA(1);
+  UbodCore coreB(2);
+  UbodCore coreC(3);
+
+  Serial.println("Assigning names:");
+
+  Serial.print("Core A: ");
+  Serial.println(coreA.setName("primary") ? "SUCCESS" : "FAILED");
+
+  Serial.print("Core B: ");
+  Serial.println(coreB.setName("sensor") ? "SUCCESS" : "FAILED");
+
+  Serial.print("Core C: ");
+  Serial.println(coreC.setName("telemetry") ? "SUCCESS" : "FAILED");
 
   Serial.println();
-  Serial.println("Identity validation:");
+  printCore("Core A", coreA);
+  printCore("Core B", coreB);
+  printCore("Core C", coreC);
 
-  printState("Core A", coreA);
-  printState("Core B", coreB);
-  printState("Core C", coreC);
+  Serial.println();
+  Serial.println("Testing duplicate names:");
 
-  // --------------------------------------------------
-  // 2. Begin valid instances
-  // --------------------------------------------------
+  Serial.print("Core C -> \"primary\": ");
+  Serial.println(coreC.setName("primary") ? "SUCCESS" : "FAILED");
+
+  printCore("Core C", coreC);
+
+  Serial.println();
+  Serial.println("Testing rename:");
+
+  Serial.print("Core B -> \"diagnostic\": ");
+  Serial.println(coreB.setName("diagnostic") ? "SUCCESS" : "FAILED");
+
+  printCore("Core B", coreB);
+
+  Serial.println();
+  Serial.println("Testing invalid long name:");
+
+  Serial.print("Core A -> long name: ");
+  Serial.println(
+    coreA.setName("this-name-is-way-too-long")
+      ? "SUCCESS"
+      : "FAILED"
+  );
+
+  printCore("Core A", coreA);
+
+  Serial.println();
+  Serial.println("Testing release:");
 
   coreA.begin();
-  coreB.begin();
-  coreC.begin();
-
-  Serial.println();
-  Serial.println("Post-begin state:");
-
-  printState("Core A", coreA);
-  printState("Core B", coreB);
-  printState("Core C", coreC);
-
-  // --------------------------------------------------
-  // 3. Run valid instances
-  // --------------------------------------------------
-
   coreA.update();
-  coreB.update();
-  coreC.update();
-
-  Serial.println();
-  Serial.println("Post-update state:");
-
-  printState("Core A", coreA);
-  printState("Core B", coreB);
-  printState("Core C", coreC);
-
-  // --------------------------------------------------
-  // 4. Release Core A
-  // --------------------------------------------------
-
-  Serial.println();
-  Serial.println("Releasing Core A...");
-
   coreA.release();
 
-  printState("Core A", coreA);
-
-  // --------------------------------------------------
-  // 5. Attempt to reuse released ID
-  // --------------------------------------------------
+  printCore("Core A", coreA);
 
   Serial.println();
-  Serial.println("Creating Core D with released ID 1...");
+  Serial.println("Attempting rename after release:");
 
-  UbodCore coreD(1);
+  Serial.print("Core A -> \"released\": ");
+  Serial.println(
+    coreA.setName("released")
+      ? "SUCCESS"
+      : "FAILED"
+  );
 
-  printState("Core D", coreD);
-
-  coreD.begin();
-
-  Serial.println();
-  Serial.println("Core D after begin:");
-
-  printState("Core D", coreD);
-
-  // --------------------------------------------------
-  // 6. Attempt to revive Core A
-  // --------------------------------------------------
-
-  Serial.println();
-  Serial.println("Attempting to restart Core A...");
-
-  coreA.begin();
-  coreA.update();
-
-  printState("Core A", coreA);
+  printCore("Core A", coreA);
 
   Serial.println();
   Serial.println("==================================");
@@ -141,7 +117,5 @@ void setup()
   Serial.println("==================================");
 }
 
-void loop()
-{
-    // No continuous test required for v0.1.4.
+void loop() {
 }

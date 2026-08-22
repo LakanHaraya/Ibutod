@@ -1,4 +1,16 @@
 # Changelog
+## [0.1.5] — Pagpapangalan sa Puwang ng Ubod (*Core Slot Naming*)
+### Idinagdag
+- Nagdagdag ng human-readable name para sa bawat Core Slot.
+- Nagdagdag ng `setName()` at `name()` API.
+- Gumamit ng fixed-sized character buffer upang maiwasan ang dynamic memory allocation.
+- Nagdagdag ng validation para sa null at sobrang habang pangalan.
+### Binago
+- Pinananatili ang huling Core Name kapag ang Core ay `RELEASED`.
+- Hindi na maaaring baguhin ang pangalan ng isang released Core.
+### Tala
+- Pinapayagan ang magkaparehong Core Name dahil ang Core ID pa rin ang natatanging identity ng slot.
+- Napanatili ang kasalukuyang Core ID at lifecycle behavior.   
 
 ## [0.1.4] — Ikot-Buhay ng Instansiya at Pagpapalaya ng Pagkakakilanlan (*Instance Lifecycle and Identity Release*)
 ### Idinagdag 
