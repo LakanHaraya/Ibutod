@@ -1,20 +1,31 @@
 #include <Arduino.h>
 #include "Ubod.h"
 
+// Initialize the UbodCore
 void UbodCore::begin() {
+    _state = UbodState::Ready;
+    _startTime = millis();
     // Initialization code here
 }
 
+// Update the state of the UbodCore
 void UbodCore::update() {
-    // Update code here
+    if (_state == UbodState::Ready) {
+        _state = UbodState::Running;
+    }
 }
 
+// Get the current state of the UbodCore
+UbodState UbodCore::state() const {
+    return _state;
+}
+
+// Check if the UbodCore is ready
 bool UbodCore::isReady() const {
-    // Return true if the system is ready, false otherwise
-    return true; // Placeholder implementation
+    return _state == UbodState::Ready;
 }
 
+// Get the uptime of the UbodCore in milliseconds
 unsigned long UbodCore::uptime() const {
-    // Return the time since the system started in milliseconds
-    return millis(); // Placeholder implementation
+    return millis() - _startTime;
 }
