@@ -1,4 +1,32 @@
 # Changelog
+## [0.1.11] — Pagtutuwid ng Terminolohiya sa Core Slot (*Core Slot Terminology Alignment*)
+### Binago 
+- Pinalitan ang `UbodCore` ng `UbodSlot` upang malinaw na kumatawan sa Core Slot bilang resource slot.
+- Pinalitan ang `UbodState` ng `UbodSlotState`.
+- Pinalitan ang `UbodAvailability` ng `UbodSlotAvailability`.
+- Pinalitan ang Core ID ng Slot ID.
+- Pinalitan ang Core Name ng Slot Name.
+- Pinalitan ang `setName()` ng `setSlotName()`.
+- Pianlitan ang `name()` ng `slotName()`.
+- Pinalitan ang `findByName()` ng `findBySlotName()`.
+- Pinalitan ang internal na `_cores` storage ng `_slots`.
+- Inihanay ang source code, API, comment, at experiment sa konsepto na ang `UbodSlot` ay hindi Core Engine.
+### Sinubukan
+- Pagbuo ng test code matapos ang terminology refactor.
+- Pag-upload at pagpapatakbo sa Arduino Nano ESP32.
+- Paglikha at pagkuha ng `UbodSlot` sa `UbodContainer`.
+- Pagpapatunay ng Slot ID at Slot Name.
+- Slot lifecycle gamit ang `begin()` at `update()`.
+- Slot availability gamit ang `occupy()` at `free()`.
+- Paghahanap ng maramihang Slot gamit ang `findBySlotName()`.
+- Slot release at pagpigil sa operasyon ng released Slot.
+### Tala
+- Ang `UbodSlot` ay kumakatawan sa resource slot at hindi sa Core Engine.
+- Hindi pa tinutukoy sa bersiyong ito ang Engine identity, Engine ownership, o attachement/detachment model.
+- Ang kasalukuyang `release()` ay nananatiling lifecycle operation ng Slot, hindi pa ito itinuturing na Engine `detach()`.
+- Ang pagbabago mula sa `UbodCore` patungong `UbodSlot` ay isang breaking terminology/API change.
+- Nanatiling static at bounded ang memory model.
+
 ## [0.1.10] — Pagtuklas at Paghahanap ng Puwang ng Ubod (*Core Slot Dicovery and Lookup*)
 ### Idinagdag
 - Idinagdag ang `findByName()` para sa paghahanap ng Core Slots batay sa Core Name.
