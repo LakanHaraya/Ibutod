@@ -1,4 +1,9 @@
 # Changelog
+Lahat ng kapansin-pansing pagbabago sa proyektong ito ay idodokumento sa file na ito.
+
+Ang format ay batay sa [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Sa kasalukuyang eksperimental na yugto ng **Ubod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 ## [0.1.11] — Pagtutuwid ng Terminolohiya sa Core Slot (*Core Slot Terminology Alignment*)
 ### Binago 
 - Pinalitan ang `UbodCore` ng `UbodSlot` upang malinaw na kumatawan sa Core Slot bilang resource slot.
