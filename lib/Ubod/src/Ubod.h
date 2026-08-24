@@ -1,6 +1,6 @@
 #pragma once
 
-enum class UbodState {
+enum class UbodSlotState {
     Initializing, 
     Ready,
     Running,
@@ -8,47 +8,47 @@ enum class UbodState {
     Invalid
 };
 
-enum class UbodAvailability {
+enum class UbodSlotAvailability {
     Free,
     Occupied
 };
 
-class UbodCore
+class UbodSlot
 {
     public:
-        explicit UbodCore(unsigned int id);
+        explicit UbodSlot(unsigned int id);
 
         void begin();
         void update();
         void release();
 
-        unsigned int id() const;
-        bool isIdValid() const;
-        bool setName(const char* name);
-        const char* name() const;
+        unsigned int slotId() const;
+        bool isSlotIdValid() const;
+        bool setSlotName(const char* name);
+        const char* slotName() const;
 
         bool occupy();
         bool free();
-        UbodAvailability availability() const;
+        UbodSlotAvailability availability() const;
         bool isFree() const;
         bool isOccupied() const;
 
-        UbodState state() const;
+        UbodSlotState state() const;
         bool isReady() const;
         unsigned long uptime() const;
 
     private:
         friend class UbodContainer;
-        UbodCore();
-        unsigned int _id;
-        static constexpr unsigned int MaxNameLength = 15;
-        char _name[MaxNameLength + 1] = {};
+        UbodSlot();
+        unsigned int _slotId;
+        static constexpr unsigned int MaxSlotNameLength = 15;
+        char _slotName[MaxSlotNameLength + 1] = {};
         bool _idValid = false;
-        UbodAvailability _availability = UbodAvailability::Free;
-        UbodState _state = UbodState::Initializing;
+        UbodSlotAvailability _availability = UbodSlotAvailability::Free;
+        UbodSlotState _state = UbodSlotState::Initializing;
         unsigned long _startTime = 0;
         unsigned long _finalUptime = 0;
-        bool isNameValid(const char* name) const;
+        bool isSlotNameValid(const char* name) const;
 };
 
 class UbodContainer {
@@ -56,17 +56,17 @@ class UbodContainer {
         static constexpr unsigned int Capacity = 4;
         static_assert(Capacity >= 2 && Capacity <= 32, "UbodContainer Capacity must be between 2 and 32.");
         UbodContainer();
-        UbodCore* get(unsigned int id);
-        const UbodCore* get(unsigned int id) const;
+        UbodSlot* get(unsigned int id);
+        const UbodSlot* get(unsigned int id) const;
         bool occupy(unsigned int id);
         bool free(unsigned int id);
-        UbodCore* findFree();
-        unsigned int findByName(const char* name, UbodCore** results, unsigned int maxResults);
-        unsigned int findByName(const char* name, const UbodCore** results, unsigned int maxResults) const;
+        UbodSlot* findFree();
+        unsigned int findBySlotName(const char* name, UbodSlot** results, unsigned int maxResults);
+        unsigned int findBySlotName(const char* name, const UbodSlot** results, unsigned int maxResults) const;
         unsigned int capacity() const;
         unsigned int used() const;
         unsigned int free() const;
 
     private:
-        UbodCore _cores[Capacity];
+        UbodSlot _slots[Capacity];
 };

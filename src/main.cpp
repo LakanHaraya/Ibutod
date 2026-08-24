@@ -1,20 +1,23 @@
 #include <Arduino.h>
-#include <Ubod.h>
+#include "Ubod.h"
 
 UbodContainer ubod;
 
-void printSlot(const UbodCore* slot) {
+void printSlot(const UbodSlot* slot) {
     if (slot == nullptr) {
         Serial.println("Slot: NOT FOUND");
         return;
     }
 
     Serial.print("Slot #");
-    Serial.print(slot->id());
+    Serial.print(slot->slotId());
 
     Serial.print(" | Slot Name: \"");
-    Serial.print(slot->name());
+    Serial.print(slot->slotName());
     Serial.print("\"");
+
+    Serial.print(" | ID valid: ");
+    Serial.print(slot->isSlotIdValid() ? "YES" : "NO");
 
     Serial.print(" | availability: ");
 
@@ -27,23 +30,23 @@ void printSlot(const UbodCore* slot) {
     Serial.print(" | state: ");
 
     switch (slot->state()) {
-        case UbodState::Initializing:
+        case UbodSlotState::Initializing:
             Serial.print("INITIALIZING");
             break;
 
-        case UbodState::Ready:
+        case UbodSlotState::Ready:
             Serial.print("READY");
             break;
 
-        case UbodState::Running:
+        case UbodSlotState::Running:
             Serial.print("RUNNING");
             break;
 
-        case UbodState::Released:
+        case UbodSlotState::Released:
             Serial.print("RELEASED");
             break;
 
-        case UbodState::Invalid:
+        case UbodSlotState::Invalid:
             Serial.print("INVALID");
             break;
     }
@@ -61,28 +64,44 @@ void setup() {
     Serial.println("==================================");
 
     // --------------------------------------------------
-    // 1. Core Slot identity
+    // 1. Container
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("Testing Core Slot identity:");
+    Serial.println("Container:");
 
-    UbodCore* slot1 = ubod.get(1);
-    UbodCore* slot2 = ubod.get(2);
+    Serial.print("Capacity: ");
+    Serial.println(ubod.capacity());
+
+    Serial.print("Used: ");
+    Serial.println(ubod.used());
+
+    Serial.print("Free: ");
+    Serial.println(ubod.free());
+
+    // --------------------------------------------------
+    // 2. Slot identity
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("Testing Slot identity:");
+
+    UbodSlot* slot1 = ubod.get(1);
+    UbodSlot* slot2 = ubod.get(2);
 
     printSlot(slot1);
     printSlot(slot2);
 
     // --------------------------------------------------
-    // 2. Slot Name
+    // 3. Slot naming
     // --------------------------------------------------
 
     Serial.println();
     Serial.println("Assigning Slot Names:");
 
-    Serial.print("Slot 1 -> \"primary\": ");
+    Serial.print("Slot 1 -> \"comms\": ");
 
-    if (slot1->setName("primary")) {
+    if (slot1->setSlotName("comms")) {
         Serial.println("SUCCESS");
     } else {
         Serial.println("FAILED");
@@ -90,7 +109,7 @@ void setup() {
 
     Serial.print("Slot 2 -> \"sensor\": ");
 
-    if (slot2->setName("sensor")) {
+    if (slot2->setSlotName("sensor")) {
         Serial.println("SUCCESS");
     } else {
         Serial.println("FAILED");
@@ -100,7 +119,7 @@ void setup() {
     printSlot(slot2);
 
     // --------------------------------------------------
-    // 3. Slot lifecycle
+    // 4. Slot lifecycle
     // --------------------------------------------------
 
     Serial.println();
@@ -117,7 +136,7 @@ void setup() {
     printSlot(slot1);
 
     // --------------------------------------------------
-    // 4. Slot availability
+    // 5. Slot availability
     // --------------------------------------------------
 
     Serial.println();
@@ -133,27 +152,52 @@ void setup() {
 
     printSlot(slot1);
 
-    Serial.print("Slot 2 availability: ");
+    Serial.print("Slot 1 free(): ");
 
-    if (slot2->isFree()) {
-        Serial.println("FREE");
+    if (slot1->free()) {
+        Serial.println("SUCCESS");
     } else {
-        Serial.println("OCCUPIED");
+        Serial.println("FAILED");
     }
 
+    printSlot(slot1);
+
     // --------------------------------------------------
-    // 5. Core Slot != Core Engine
+    // 6. Slot lookup by Slot Name
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("Testing Core Slot / Core Engine separation:");
+    Serial.println("Testing Slot Name lookup:");
 
-    Serial.println("Slot 1 represents a resource slot.");
-    Serial.println("Slot Name: primary");
-    Serial.println("No Core Engine is assigned yet.");
+    UbodSlot* results[4] = {};
+
+    unsigned int count = ubod.findBySlotName(
+        "sensor",
+        results,
+        4
+    );
+
+    Serial.print("Matches for \"sensor\": ");
+    Serial.println(count);
+
+    for (unsigned int i = 0; i < count; ++i) {
+        printSlot(results[i]);
+    }
 
     // --------------------------------------------------
-    // 6. Release semantics
+    // 7. Slot / Engine conceptual boundary
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("Testing Slot / Engine boundary:");
+
+    Serial.println("UbodSlot represents a resource slot.");
+    Serial.println("Slot ID identifies the slot.");
+    Serial.println("Slot Name names the slot.");
+    Serial.println("No Core Engine is attached yet.");
+
+    // --------------------------------------------------
+    // 8. Release
     // --------------------------------------------------
 
     Serial.println();
@@ -164,25 +208,12 @@ void setup() {
     printSlot(slot1);
 
     Serial.println();
-    Serial.println("After release():");
-    Serial.println("The Core Slot is no longer valid for lifecycle operations.");
-    Serial.println("Core Engine attachment/detachment is NOT implemented yet.");
+    Serial.println("Release completed.");
+    Serial.println("Engine attachment/detachment is not implemented.");
 
     // --------------------------------------------------
-    // 7. Container remains the Slot manager
+    // Complete
     // --------------------------------------------------
-
-    Serial.println();
-    Serial.println("Testing UbodContainer:");
-
-    Serial.print("Container capacity: ");
-    Serial.println(ubod.capacity());
-
-    Serial.print("Container used: ");
-    Serial.println(ubod.used());
-
-    Serial.print("Container free: ");
-    Serial.println(ubod.free());
 
     Serial.println();
     Serial.println("==================================");

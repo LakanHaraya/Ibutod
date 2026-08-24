@@ -2,40 +2,40 @@
 #include "Ubod.h"
 #include <cstring>
 
-UbodCore::UbodCore() : 
-    _id(0), 
+UbodSlot::UbodSlot() : 
+    _slotId(0), 
     _idValid(false), 
-    _state(UbodState::Invalid), 
+    _state(UbodSlotState::Invalid), 
     _startTime(0), 
     _finalUptime(0) { 
         // Default constructor is private to prevent creating UbodCore without a valid ID
     }
 
-UbodCore::UbodCore(unsigned int id) : _id(id) {
-    _idValid = (_id > 0);
-    if (!_idValid) { _state = UbodState::Invalid; }
+UbodSlot::UbodSlot(unsigned int id) : _slotId(id) {
+    _idValid = (_slotId > 0);
+    if (!_idValid) { _state = UbodSlotState::Invalid; }
 }
 
-void UbodCore::release() {
+void UbodSlot::release() {
     if (!_idValid) { return; }
     _finalUptime = millis() - _startTime;
     _idValid = false;
-    _state = UbodState::Released;
+    _state = UbodSlotState::Released;
 }
 
-unsigned int UbodCore::id() const {
-    return _id;
+unsigned int UbodSlot::slotId() const {
+    return _slotId;
 }
 
-bool UbodCore::isIdValid() const {
+bool UbodSlot::isSlotIdValid() const {
     return _idValid;
 }
 
-bool UbodCore::isNameValid(const char* name) const {
+bool UbodSlot::isSlotNameValid(const char* name) const {
     if (name == nullptr || name[0] == '\0') { return false; }
     unsigned int i = 0;
     bool hasNonWhiteSpace = false;
-    while (name[i] != '\0' && i < MaxNameLength) {
+    while (name[i] != '\0' && i < MaxSlotNameLength) {
         if (name[i] != ' ' && 
             name[i] != '\t' &&
             name[i] != '\n' &&
@@ -47,75 +47,73 @@ bool UbodCore::isNameValid(const char* name) const {
     return name[i] == '\0' && hasNonWhiteSpace;
 }
 
-bool UbodCore::setName(const char* name) {
-    if (!_idValid || _state == UbodState::Released) { return false; }
-    if (!isNameValid(name)) { return false; }
+bool UbodSlot::setSlotName(const char* name) {
+    if (!_idValid || _state == UbodSlotState::Released) { return false; }
+    if (!isSlotNameValid(name)) { return false; }
     unsigned int i = 0;
-    while (name[i] != '\0' && i < MaxNameLength) { ++i; }
+    while (name[i] != '\0' && i < MaxSlotNameLength) { ++i; }
     if (name[i] != '\0') { return false; }
-    for (unsigned int j = 0; j < i; ++j) { _name[j] = name[j]; }
-    _name[i] = '\0';
+    for (unsigned int j = 0; j < i; ++j) { _slotName[j] = name[j]; }
+    _slotName[i] = '\0';
     return true;
 }
 
-const char* UbodCore::name() const {
-    return _name;
+const char* UbodSlot::slotName() const {
+    return _slotName;
 }
 
-bool UbodCore::occupy() {
-    if (!_idValid || _state == UbodState::Released) { return false; }
-    if (_availability == UbodAvailability::Occupied) { return false; }
-    _availability = UbodAvailability::Occupied;
+bool UbodSlot::occupy() {
+    if (!_idValid || _state == UbodSlotState::Released) { return false; }
+    if (_availability == UbodSlotAvailability::Occupied) { return false; }
+    _availability = UbodSlotAvailability::Occupied;
     return true;
 }
 
-bool UbodCore::free() {
-    if (!_idValid || _state == UbodState::Released) { return false; }
-    if (_availability == UbodAvailability::Free) { return false; }
-    _availability = UbodAvailability::Free;
+bool UbodSlot::free() {
+    if (!_idValid || _state == UbodSlotState::Released) { return false; }
+    if (_availability == UbodSlotAvailability::Free) { return false; }
+    _availability = UbodSlotAvailability::Free;
     return true;
 }
 
-UbodAvailability UbodCore::availability() const {
+UbodSlotAvailability UbodSlot::availability() const {
     return _availability;
 }
 
-bool UbodCore::isFree() const {
-    return _availability == UbodAvailability::Free;
+bool UbodSlot::isFree() const {
+    return _availability == UbodSlotAvailability::Free;
 }
 
-bool UbodCore::isOccupied() const {
-    return _availability == UbodAvailability::Occupied;
+bool UbodSlot::isOccupied() const {
+    return _availability == UbodSlotAvailability::Occupied;
 }
 
-void UbodCore::begin() {
-    if (!_idValid || _state == UbodState::Released) { return; }
+void UbodSlot::begin() {
+    if (!_idValid || _state == UbodSlotState::Released) { return; }
 
-    _state = UbodState::Ready;
+    _state = UbodSlotState::Ready;
     _startTime = millis();
 }
 
 // Update the state of the UbodCore
-void UbodCore::update() {
-    if (!_idValid || _state == UbodState::Released) { return; }
+void UbodSlot::update() {
+    if (!_idValid || _state == UbodSlotState::Released) { return; }
 
-    if (_state == UbodState::Ready) {
-        _state = UbodState::Running;
+    if (_state == UbodSlotState::Ready) {
+        _state = UbodSlotState::Running;
     }
 }
 
-// Get the current state of the UbodCore
-UbodState UbodCore::state() const {
+UbodSlotState UbodSlot::state() const {
     return _state;
 }
 
-// Check if the UbodCore is ready
-bool UbodCore::isReady() const {
-    return _state == UbodState::Ready;
+bool UbodSlot::isReady() const {
+    return _state == UbodSlotState::Ready;
 }
 
-unsigned long UbodCore::uptime() const {
-    if (_state == UbodState::Released) {
+unsigned long UbodSlot::uptime() const {
+    if (_state == UbodSlotState::Released) {
         return _finalUptime;
     }
 
@@ -124,59 +122,59 @@ unsigned long UbodCore::uptime() const {
 
 UbodContainer::UbodContainer() {
     for (unsigned int i = 0; i < Capacity; ++i) {
-        _cores[i] = UbodCore(i + 1);
+        _slots[i] = UbodSlot(i + 1);
     }
 }
 
-UbodCore* UbodContainer::get(unsigned int id) {
+UbodSlot* UbodContainer::get(unsigned int id) {
     if (id == 0 || id > Capacity) { return nullptr; }
-    return &_cores[id - 1];
+    return &_slots[id - 1];
 }
 
-const UbodCore* UbodContainer::get(unsigned int id) const {
+const UbodSlot* UbodContainer::get(unsigned int id) const {
     if (id == 0 || id > Capacity) { return nullptr; }
-    return &_cores[id - 1];
+    return &_slots[id - 1];
 }
 
 bool UbodContainer::occupy(unsigned int id) {
-    UbodCore* core = get(id);
+    UbodSlot* core = get(id);
     if (core == nullptr) { return false; }
     return core->occupy();
 }
 
 bool UbodContainer::free(unsigned int id) {
-    UbodCore* core = get(id);
+    UbodSlot* core = get(id);
     if (core == nullptr) { return false; }
     return core->free();
 }
 
-UbodCore* UbodContainer::findFree() {
+UbodSlot* UbodContainer::findFree() {
     for (unsigned int i = 0; i < Capacity; ++i) {
-        if (_cores[i].isFree()) { return &_cores[i]; }
+        if (_slots[i].isFree()) { return &_slots[i]; }
     }
     return nullptr;
 }
 
-unsigned int UbodContainer::findByName(const char* name, UbodCore** results, unsigned int maxResults) {
+unsigned int UbodContainer::findBySlotName(const char* name, UbodSlot** results, unsigned int maxResults) {
     if (name == nullptr || results == nullptr || maxResults == 0) { return 0; }
     unsigned int foundCount = 0;
     for (unsigned int i = 0; i < Capacity; ++i) {
-        if (strcmp(_cores[i].name(), name) == 0) {
+        if (strcmp(_slots[i].slotName(), name) == 0) {
             if (foundCount >= maxResults) { break; }
-            results[foundCount] = &_cores[i];
+            results[foundCount] = &_slots[i];
             ++foundCount;
         }
     }
     return foundCount;
 }
 
-unsigned int UbodContainer::findByName(const char* name, const UbodCore** results, unsigned int maxResults) const {
+unsigned int UbodContainer::findBySlotName(const char* name, const UbodSlot** results, unsigned int maxResults) const {
     if (name == nullptr || results == nullptr || maxResults == 0) { return 0; }
     unsigned int foundCount = 0;
     for (unsigned int i = 0; i < Capacity; ++i) {
-        if (strcmp(_cores[i].name(), name) == 0) {
+        if (strcmp(_slots[i].slotName(), name) == 0) {
             if (foundCount >= maxResults) { break; }
-            results[foundCount] = &_cores[i];
+            results[foundCount] = &_slots[i];
             ++foundCount;
         }
     }
@@ -190,7 +188,7 @@ unsigned int UbodContainer::capacity() const {
 unsigned int UbodContainer::used() const {
     unsigned int count = 0;
     for (unsigned int i = 0; i < Capacity; ++i) {
-        if (_cores[i].isOccupied()) { ++count; }
+        if (_slots[i].isOccupied()) { ++count; }
     }
     return count;
 }
