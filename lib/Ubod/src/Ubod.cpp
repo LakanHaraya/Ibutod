@@ -2,34 +2,34 @@
 #include "Ubod.h"
 #include <cstring>
 
-UbodSlot::UbodSlot()
-    : _slotId(0),
+Salpakan::Salpakan()
+    : _id(0),
       _idValid(false),
-      _state(UbodSlotState::Invalid),
+      _state(SalpakanState::Invalid),
       _startTime(0)
 {
     // Default constructor is private to prevent
-    // creating UbodSlot without a valid Slot ID.
+    // creating Salpakan without a valid Salpakan ID.
 }
 
-UbodSlot::UbodSlot(unsigned int id)
-    : _slotId(id)
+Salpakan::Salpakan(unsigned int id)
+    : _id(id)
 {
-    _idValid = (_slotId > 0);
-    if (!_idValid) { _state = UbodSlotState::Invalid; }
+    _idValid = (_id > 0);
+    if (!_idValid) { _state = SalpakanState::Invalid; }
 }
 
-unsigned int UbodSlot::slotId() const { return _slotId; }
+unsigned int Salpakan::id() const { return _id; }
 
-bool UbodSlot::isSlotIdValid() const { return _idValid; }
+bool Salpakan::isIdValid() const { return _idValid; }
 
-bool UbodSlot::isSlotNameValid(const char* name) const {
+bool Salpakan::isNameValid(const char* name) const {
     if (name == nullptr || name[0] == '\0') { return false; }
     unsigned int i = 0;
     bool hasNonWhiteSpace = false;
     while (
         name[i] != '\0' &&
-        i < MaxSlotNameLength
+        i < MaxNameLength
     ) {
         if (
             name[i] != ' ' &&
@@ -44,124 +44,124 @@ bool UbodSlot::isSlotNameValid(const char* name) const {
     return name[i] == '\0' && hasNonWhiteSpace;
 }
 
-bool UbodSlot::setSlotName(const char* name) {
+bool Salpakan::setName(const char* name) {
     if (!_idValid) { return false; }
-    if (!isSlotNameValid(name)) { return false; }
+    if (!isNameValid(name)) { return false; }
     unsigned int i = 0;
     while (
         name[i] != '\0' &&
-        i < MaxSlotNameLength
+        i < MaxNameLength
     ) {
         ++i;
     }
     if (name[i] != '\0') { return false; }
     for (unsigned int j = 0; j < i; ++j) {
-        _slotName[j] = name[j];
+        _name[j] = name[j];
     }
-    _slotName[i] = '\0';
+    _name[i] = '\0';
     return true;
 }
 
-const char* UbodSlot::slotName() const { return _slotName; }
+const char* Salpakan::name() const { return _name; }
 
 // --------------------------------------------------
-// Attachment
+// Pagkabit
 // --------------------------------------------------
 
-bool UbodSlot::attach(UbodEngine* engine) {
+bool Salpakan::attach(Sapad* sapad) {
     if (!_idValid) { return false; }
-    if (engine == nullptr) { return false; }
-    if (_engine != nullptr) { return false; }
-    _engine = engine;
+    if (sapad == nullptr) { return false; }
+    if (_sapad != nullptr) { return false; }
+    _sapad = sapad;
     return true;
 }
 
-bool UbodSlot::detach() {
+bool Salpakan::detach() {
     if (!_idValid) { return false; }
-    if (_engine == nullptr) { return false; }
-    _engine = nullptr;
+    if (_sapad == nullptr) { return false; }
+    _sapad = nullptr;
     return true;
 }
 
-UbodEngine* UbodSlot::engine() { return _engine; }
+Sapad* Salpakan::sapad() { return _sapad; }
 
-const UbodEngine* UbodSlot::engine() const { return _engine; }
+const Sapad* Salpakan::sapad() const { return _sapad; }
 
-bool UbodSlot::hasEngine() const { return _engine != nullptr; }
+bool Salpakan::hasSapad() const { return _sapad != nullptr; }
 
-UbodSlotAvailability UbodSlot::availability() const {
-    return _engine != nullptr ? UbodSlotAvailability::Occupied : UbodSlotAvailability::Free;
+SalpakanAvailability Salpakan::availability() const {
+    return _sapad != nullptr ? SalpakanAvailability::Occupied : SalpakanAvailability::Free;
 }
 
-bool UbodSlot::isFree() const { return _engine == nullptr; }
+bool Salpakan::isFree() const { return _sapad == nullptr; }
 
-bool UbodSlot::isOccupied() const { return _engine != nullptr; }
+bool Salpakan::isOccupied() const { return _sapad != nullptr; }
 
 // --------------------------------------------------
-// Lifecycle
+// Ikot-Buhay
 // --------------------------------------------------
 
-void UbodSlot::begin() {
+void Salpakan::begin() {
     if (!_idValid) { return; }
-    _state = UbodSlotState::Ready;
+    _state = SalpakanState::Ready;
     _startTime = millis();
 }
 
-void UbodSlot::update() {
+void Salpakan::update() {
     if (!_idValid) { return; }
-    if (_state == UbodSlotState::Ready) {
-        _state = UbodSlotState::Running;
+    if (_state == SalpakanState::Ready) {
+        _state = SalpakanState::Running;
     }
 }
 
-UbodSlotState UbodSlot::state() const { return _state; }
+SalpakanState Salpakan::state() const { return _state; }
 
-bool UbodSlot::isReady() const { return _state == UbodSlotState::Ready; }
+bool Salpakan::isReady() const { return _state == SalpakanState::Ready; }
 
-unsigned long UbodSlot::uptime() const { return millis() - _startTime; }
+unsigned long Salpakan::uptime() const { return millis() - _startTime; }
 
 // --------------------------------------------------
-// Container
+// Salalayan
 // --------------------------------------------------
 
-UbodContainer::UbodContainer() {
+Salalayan::Salalayan() {
     for (unsigned int i = 0; i < Capacity; ++i) {
-        _slots[i] = UbodSlot(i + 1);
+        _salpakan[i] = Salpakan(i + 1);
     }
 }
 
-UbodSlot* UbodContainer::get(unsigned int id) {
+Salpakan* Salalayan::get(unsigned int id) {
     if (id == 0 || id > Capacity) { return nullptr; }
-    return &_slots[id - 1];
+    return &_salpakan[id - 1];
 }
 
-const UbodSlot* UbodContainer::get(unsigned int id) const {
+const Salpakan* Salalayan::get(unsigned int id) const {
     if (id == 0 || id > Capacity) { return nullptr; }
-    return &_slots[id - 1];
+    return &_salpakan[id - 1];
 }
 
-bool UbodContainer::attach(unsigned int id, UbodEngine* engine) {
-    UbodSlot* slot = get(id);
-    if (slot == nullptr) { return false; }
-    return slot->attach(engine);
+bool Salalayan::attach(unsigned int id, Sapad* sapad) {
+    Salpakan* salpakan = get(id);
+    if (salpakan == nullptr) { return false; }
+    return salpakan->attach(sapad);
 }
 
-bool UbodContainer::detach(unsigned int id) {
-    UbodSlot* slot = get(id);
-    if (slot == nullptr) { return false; }
-    return slot->detach();
+bool Salalayan::detach(unsigned int id) {
+    Salpakan* salpakan = get(id);
+    if (salpakan == nullptr) { return false; }
+    return salpakan->detach();
 }
 
-UbodSlot* UbodContainer::findFree() {
+Salpakan* Salalayan::findFree() {
     for (unsigned int i = 0; i < Capacity; ++i) {
-        if (_slots[i].isFree()) { return &_slots[i]; }
+        if (_salpakan[i].isFree()) { return &_salpakan[i]; }
     }
     return nullptr;
 }
 
-unsigned int UbodContainer::findBySlotName(
+unsigned int Salalayan::findByName(
     const char* name,
-    UbodSlot** results,
+    Salpakan** results,
     unsigned int maxResults
 ) {
     if (
@@ -173,18 +173,18 @@ unsigned int UbodContainer::findBySlotName(
     }
     unsigned int foundCount = 0;
     for (unsigned int i = 0; i < Capacity; ++i) {
-        if (strcmp(_slots[i].slotName(), name) == 0) {
+        if (strcmp(_salpakan[i].name(), name) == 0) {
             if (foundCount >= maxResults) { break; }
-            results[foundCount] = &_slots[i];
+            results[foundCount] = &_salpakan[i];
             ++foundCount;
         }
     }
     return foundCount;
 }
 
-unsigned int UbodContainer::findBySlotName(
+unsigned int Salalayan::findByName(
     const char* name,
-    const UbodSlot** results,
+    const Salpakan** results,
     unsigned int maxResults
 ) const {
     if (
@@ -196,27 +196,27 @@ unsigned int UbodContainer::findBySlotName(
     }
     unsigned int foundCount = 0;
     for (unsigned int i = 0; i < Capacity; ++i) {
-        if (strcmp(_slots[i].slotName(), name) == 0) {
+        if (strcmp(_salpakan[i].name(), name) == 0) {
             if (foundCount >= maxResults) { break; }
-            results[foundCount] = &_slots[i];
+            results[foundCount] = &_salpakan[i];
             ++foundCount;
         }
     }
     return foundCount;
 }
 
-unsigned int UbodContainer::capacity() const {
+unsigned int Salalayan::capacity() const {
     return Capacity;
 }
 
-unsigned int UbodContainer::used() const {
+unsigned int Salalayan::used() const {
     unsigned int count = 0;
     for (unsigned int i = 0; i < Capacity; ++i) {
-        if (_slots[i].isOccupied()) { ++count; }
+        if (_salpakan[i].isOccupied()) { ++count; }
     }
     return count;
 }
 
-unsigned int UbodContainer::free() const {
+unsigned int Salalayan::free() const {
     return Capacity - used();
 }

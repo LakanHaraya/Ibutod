@@ -4,6 +4,36 @@ Lahat ng kapansin-pansing pagbabago sa proyektong ito ay idodokumento sa file na
 Ang format ay batay sa [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Sa kasalukuyang eksperimental na yugto ng **Ubod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersiyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.15] — Paglipat sa Terminolohiyang Filipino (*Filipino Terminology Migration*)
+### Binago
+- Pinalitan ang pangunahing terminolohiya ng Ubod upang gamitin ang mga canonical Filipino abstractions:
+    - `UbodContainer` → `Salalayan`
+    - `UbodSlot` → `Salpakan`
+    - `UbodEngine` → `Sapad`
+- Pinalitan ang mga kaugnay na enum:
+    - `UbodSlotState` → `SalpakanState`
+    - `UbodSlotAvailability` → `SalpakanAvailability`
+- Inangkop ang mga API at internal member names upang tumugma sa bagong terminolohiya.
+- Pinanatili muna ang English method names upang manatiling malinaw at pamilyar ang operational API habang experimental ang architecture.
+### Napatunayan
+- Gumagana nang tama ang attachment at detachment ng isang `Sapad` sa isang `Salpakan`.
+- Nanatiling persistent ang identity ng isang `Salpakan` kahit walang nakakabit na `Sapad`.
+- Napatunayan ang isang-Sapad-bawat-Salpakan attachment invariant.
+- Gumagana ang reattachment ng `Sapad` matapos ang detachment.
+- Gumagana ang accounting ng `Salalayan` gamit ang `capacity()`, `used()`, at `free()`.
+- Gumagana ang paghahanap ng libreng `Salpakan`.
+- Gumagana ang lookup ng `Salalayan` batay sa pangalan.
+- Napatunayan na ang `Salpakan` IDs ay local sa isang `Salalayan`.
+- Napatunayan na maaaring magkaroon ng maraming `Salalayan` na parehong may `Salapakan #1`, ngunit magkaibang object ang mga ito.
+## Tala
+- Itinatag ang canonical conceptual hierarchy: **Silid → Salalayan → Salpakan → Sapad**
+- Ang `Silid` ay nananatiling conceptual system/environment boundary at wala pang kinakailangang class implementation.
+- Ang `Salalayan` ang nag-oorganisa at naglalaman ng mga `Salpakan`.
+- Ang `Salpakan` ang persistent modular attachment boundary.
+- Ang `Sapad` ang functional unit na maaaring ikabit sa isang `Salpakan`.
+- Ang attachment ay nagtatatag lamang ng modular relationship at hindi pa awtomatikong nagsisimula ng execution.
+- Ang runtime execution contract ng `Sapad` ay hindi pa ipinapatupad at ipinagpaliban para sa susunod na experimental iterations.
+
 ## [0.1.14] — Hangganan ng Pagkakabit ng Engine (*Engine Attachment Boundary*)
 ### Idinagdag
 - Idinagdag ang minimal na `UbodEngine` type bilang boundary para sa mga object na maaaring i-attach sa `UbodSLot`

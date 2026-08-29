@@ -1,509 +1,621 @@
 #include <Arduino.h>
 #include "Ubod.h"
 
-UbodContainer ubod;
-
-// --------------------------------------------------
-// External Engines
-// --------------------------------------------------
-//
-// Ang mga Engine ay nililikha sa labas ng Ubod.
-// Hindi sila pagmamay-ari ng Ubod.
-//
-// Sa v0.1.14, UbodEngine ay minimal type boundary
-// lamang. Wala pa itong execution behavior.
-//
-
-UbodEngine primaryComms;
-UbodEngine telemetry;
+// ==================================================
+// UBOD v0.1.15 EXPERIMENT
+// Filipino Terminology Migration Validation
+// ==================================================
 
 
 // --------------------------------------------------
-// Helper: Print Slot
+// Salalayan
 // --------------------------------------------------
 
-void printSlot(const UbodSlot* slot) {
+Salalayan salalayan;
 
-    if (slot == nullptr) {
-        Serial.println("Slot: NOT FOUND");
+
+// --------------------------------------------------
+// Test Sapad
+// --------------------------------------------------
+
+Sapad primaryComms;
+Sapad telemetry;
+Sapad diagnostics;
+
+
+// ==================================================
+// Helpers
+// ==================================================
+
+const char* availabilityText(SalpakanAvailability availability) {
+    switch (availability) {
+        case SalpakanAvailability::Free:
+            return "FREE";
+
+        case SalpakanAvailability::Occupied:
+            return "OCCUPIED";
+
+        default:
+            return "UNKNOWN";
+    }
+}
+
+
+const char* stateText(SalpakanState state) {
+    switch (state) {
+        case SalpakanState::Initializing:
+            return "INITIALIZING";
+
+        case SalpakanState::Ready:
+            return "READY";
+
+        case SalpakanState::Running:
+            return "RUNNING";
+
+        case SalpakanState::Invalid:
+            return "INVALID";
+
+        default:
+            return "UNKNOWN";
+    }
+}
+
+
+void printLine() {
+    Serial.println(
+        "+-----+------------------+---------+-----------+-------------+---------------+"
+    );
+}
+
+
+// --------------------------------------------------
+// Salpakan Table
+// --------------------------------------------------
+
+void printSalpakanHeader() {
+    printLine();
+
+    Serial.println(
+        "| ID  | NAME             | ID OK   | SAPAD     | AVAILABILITY| STATE         |"
+    );
+
+    printLine();
+}
+
+
+void printSalpakanRow(const Salpakan* salpakan) {
+    if (salpakan == nullptr) {
+        Serial.println("| --- | NOT FOUND        | ---     | ---       | ---         | ---           |");
         return;
     }
 
-    Serial.print("Slot #");
-    Serial.print(slot->slotId());
+    char buffer[128];
 
-    Serial.print(" | Name: \"");
-    Serial.print(slot->slotName());
-    Serial.print("\"");
-
-    Serial.print(" | ID: ");
-    Serial.print(
-        slot->isSlotIdValid()
-            ? "VALID"
-            : "INVALID"
+    snprintf(
+        buffer,
+        sizeof(buffer),
+        "| %-3u | %-16s | %-7s | %-9s | %-11s | %-13s |",
+        salpakan->id(),
+        salpakan->name(),
+        salpakan->isIdValid() ? "YES" : "NO",
+        salpakan->hasSapad() ? "ATTACHED" : "NONE",
+        availabilityText(salpakan->availability()),
+        stateText(salpakan->state())
     );
 
-    Serial.print(" | Engine: ");
+    Serial.println(buffer);
+}
 
-    if (slot->hasEngine()) {
-        Serial.print("ATTACHED");
-    } else {
-        Serial.print("NONE");
+
+void printSalpakanTable() {
+    printSalpakanHeader();
+
+    for (unsigned int id = 1; id <= salalayan.capacity(); ++id) {
+        printSalpakanRow(salalayan.get(id));
     }
 
-    Serial.print(" | Availability: ");
-
-    switch (slot->availability()) {
-
-        case UbodSlotAvailability::Free:
-            Serial.print("FREE");
-            break;
-
-        case UbodSlotAvailability::Occupied:
-            Serial.print("OCCUPIED");
-            break;
-    }
-
-    Serial.print(" | State: ");
-
-    switch (slot->state()) {
-
-        case UbodSlotState::Initializing:
-            Serial.print("INITIALIZING");
-            break;
-
-        case UbodSlotState::Ready:
-            Serial.print("READY");
-            break;
-
-        case UbodSlotState::Running:
-            Serial.print("RUNNING");
-            break;
-
-        case UbodSlotState::Invalid:
-            Serial.print("INVALID");
-            break;
-    }
-
-    Serial.println();
+    printLine();
 }
 
 
 // --------------------------------------------------
-// Helper: Boolean Test
+// Result Helper
 // --------------------------------------------------
 
-void printTest(
-    const char* label,
-    bool passed
-) {
+void printResult(const char* label, bool result) {
     Serial.print(label);
     Serial.print(": ");
-    Serial.println(
-        passed
-            ? "PASS"
-            : "FAIL"
-    );
+    Serial.println(result ? "PASS" : "FAIL");
 }
 
 
 // --------------------------------------------------
-// Experiment
+// Section Helper
 // --------------------------------------------------
+
+void printSection(unsigned int number, const char* title) {
+    Serial.println();
+    Serial.print("[");
+    Serial.print(number);
+    Serial.print("] ");
+    Serial.println(title);
+
+    Serial.println(
+        "------------------------------------------------------------"
+    );
+}
+
+
+// ==================================================
+// Experiment
+// ==================================================
 
 void setup() {
 
     Serial.begin(115200);
+
     delay(2000);
 
     Serial.println();
-    Serial.println("========================================");
-    Serial.println("       UBOD v0.1.14 EXPERIMENT");
-    Serial.println("========================================");
+    Serial.println("============================================================");
+    Serial.println("             UBOD v0.1.15 EXPERIMENT");
+    Serial.println("       Filipino Terminology Migration Validation");
+    Serial.println("============================================================");
 
 
     // --------------------------------------------------
-    // 1. Container
+    // 1. Salalayan Overview
     // --------------------------------------------------
 
-    Serial.println();
-    Serial.println("1. Container");
-    Serial.println("----------------------------------------");
+    printSection(1, "Salalayan Overview");
 
     Serial.print("Capacity: ");
-    Serial.println(ubod.capacity());
+    Serial.println(salalayan.capacity());
 
     Serial.print("Used: ");
-    Serial.println(ubod.used());
+    Serial.println(salalayan.used());
 
     Serial.print("Free: ");
-    Serial.println(ubod.free());
+    Serial.println(salalayan.free());
+
+    printSalpakanTable();
 
 
     // --------------------------------------------------
-    // 2. Initial Slot
+    // 2. Salpakan Identity
     // --------------------------------------------------
 
-    Serial.println();
-    Serial.println("2. Initial Slot State");
-    Serial.println("----------------------------------------");
+    printSection(2, "Salpakan Identity");
 
-    UbodSlot* slot1 = ubod.get(1);
+    Salpakan* salpakan1 = salalayan.get(1);
+    Salpakan* salpakan2 = salalayan.get(2);
+    Salpakan* salpakan3 = salalayan.get(3);
+    Salpakan* salpakan4 = salalayan.get(4);
 
-    printSlot(slot1);
-
-    printTest(
-        "Initial slot is FREE",
-        slot1 != nullptr &&
-        slot1->isFree()
+    printResult(
+        "Salpakan #1 exists",
+        salpakan1 != nullptr
     );
 
-    printTest(
-        "Initial slot has NO engine",
-        slot1 != nullptr &&
-        !slot1->hasEngine() &&
-        slot1->engine() == nullptr
+    printResult(
+        "Salpakan #2 exists",
+        salpakan2 != nullptr
     );
 
-
-    // --------------------------------------------------
-    // 3. Slot Naming
-    // --------------------------------------------------
-
-    Serial.println();
-    Serial.println("3. Slot Naming");
-    Serial.println("----------------------------------------");
-
-    bool result = slot1->setSlotName("primaryComms");
-
-    printTest(
-        "setSlotName(primaryComms)",
-        result
+    printResult(
+        "Salpakan #3 exists",
+        salpakan3 != nullptr
     );
 
-    Serial.print("Slot name: ");
-    Serial.println(slot1->slotName());
-
-
-    // --------------------------------------------------
-    // 4. Reject nullptr Attachment
-    // --------------------------------------------------
-
-    Serial.println();
-    Serial.println("4. Reject nullptr Attachment");
-    Serial.println("----------------------------------------");
-
-    result = ubod.attach(1, nullptr);
-
-    printTest(
-        "attach(nullptr) rejected",
-        !result
+    printResult(
+        "Salpakan #4 exists",
+        salpakan4 != nullptr
     );
 
-    printSlot(slot1);
+    printResult(
+        "Salpakan #1 ID valid",
+        salpakan1 != nullptr &&
+        salpakan1->isIdValid()
+    );
+
+    printResult(
+        "Salpakan #2 ID valid",
+        salpakan2 != nullptr &&
+        salpakan2->isIdValid()
+    );
+
+    printResult(
+        "Salpakan #3 ID valid",
+        salpakan3 != nullptr &&
+        salpakan3->isIdValid()
+    );
+
+    printResult(
+        "Salpakan #4 ID valid",
+        salpakan4 != nullptr &&
+        salpakan4->isIdValid()
+    );
+
+    printSalpakanTable();
 
 
     // --------------------------------------------------
-    // 5. Attach First Engine
+    // 3. Naming Salpakan
     // --------------------------------------------------
 
-    Serial.println();
-    Serial.println("5. Attach primaryComms");
-    Serial.println("----------------------------------------");
+    printSection(3, "Salpakan Naming");
 
-    result = ubod.attach(
+    bool result;
+
+    result = salpakan1->setName("Slot Name 1");
+    printResult("Name Salpakan #1", result);
+
+    result = salpakan2->setName("Slot Name 2");
+    printResult("Name Salpakan #2", result);
+
+    result = salpakan3->setName("Slot Name 3");
+    printResult("Name Salpakan #3", result);
+
+    // result = salpakan4->setName("Slot Name 4");
+    printResult("Name Salpakan #4", result);
+
+    printSalpakanTable();
+
+
+    // --------------------------------------------------
+    // 4. Initial Availability
+    // --------------------------------------------------
+
+    printSection(4, "Initial Salpakan Availability");
+
+    bool allFree = true;
+
+    for (
+        unsigned int id = 1;
+        id <= salalayan.capacity();
+        ++id
+    ) {
+        Salpakan* salpakan = salalayan.get(id);
+
+        if (
+            salpakan == nullptr ||
+            !salpakan->isFree() ||
+            salpakan->hasSapad()
+        ) {
+            allFree = false;
+            break;
+        }
+    }
+
+    printResult(
+        "All Salpakan initially FREE",
+        allFree
+    );
+
+    printSalpakanTable();
+
+
+    // --------------------------------------------------
+    // 5. Attach Sapad
+    // --------------------------------------------------
+
+    printSection(5, "Attach Sapad");
+
+    result = salalayan.attach(
         1,
         &primaryComms
     );
 
-    printTest(
-        "attach(primaryComms)",
+    printResult(
+        "Attach primaryComms to Salpakan #1",
         result
     );
 
-    printSlot(slot1);
 
-    printTest(
-        "engine() == primaryComms",
-        slot1->engine() == &primaryComms
-    );
-
-    printTest(
-        "Slot becomes OCCUPIED",
-        slot1->isOccupied()
-    );
-
-
-    // --------------------------------------------------
-    // 6. Attachment Identity
-    // --------------------------------------------------
-
-    Serial.println();
-    Serial.println("6. Attachment Identity");
-    Serial.println("----------------------------------------");
-
-    printTest(
-        "hasEngine() == true",
-        slot1->hasEngine()
-    );
-
-    printTest(
-        "engine() is not nullptr",
-        slot1->engine() != nullptr
-    );
-
-    printTest(
-        "availability() == OCCUPIED",
-        slot1->availability()
-            == UbodSlotAvailability::Occupied
-    );
-
-
-    // --------------------------------------------------
-    // 7. Second Attachment
-    // --------------------------------------------------
-    //
-    // One Engine per Slot ang target behavior.
-    // Hindi dapat ma-overwrite ang kasalukuyang
-    // attachment habang occupied ang Slot.
-    //
-
-    Serial.println();
-    Serial.println("7. Reject Second Engine");
-    Serial.println("----------------------------------------");
-
-    result = ubod.attach(
-        1,
+    result = salalayan.attach(
+        2,
         &telemetry
     );
 
-    printTest(
-        "attach(telemetry) rejected",
-        !result
+    printResult(
+        "Attach telemetry to Salpakan #2",
+        result
     );
 
-    printTest(
-        "Original Engine preserved",
-        slot1->engine() == &primaryComms
+
+    result = salalayan.attach(
+        3,
+        &diagnostics
     );
 
-    printSlot(slot1);
+    printResult(
+        "Attach diagnostics to Salpakan #3",
+        result
+    );
+
+    printSalpakanTable();
 
 
     // --------------------------------------------------
-    // 8. Container Accounting
+    // 6. Sapad Attachment Identity
     // --------------------------------------------------
 
-    Serial.println();
-    Serial.println("8. Container Accounting");
-    Serial.println("----------------------------------------");
+    printSection(6, "Sapad Attachment Identity");
+
+    printResult(
+        "Salpakan #1 -> primaryComms",
+        salpakan1->sapad() == &primaryComms
+    );
+
+    printResult(
+        "Salpakan #2 -> telemetry",
+        salpakan2->sapad() == &telemetry
+    );
+
+    printResult(
+        "Salpakan #3 -> diagnostics",
+        salpakan3->sapad() == &diagnostics
+    );
+
+
+    // --------------------------------------------------
+    // 7. Salalayan Accounting
+    // --------------------------------------------------
+
+    printSection(7, "Salalayan Accounting");
+
+    Serial.print("Capacity: ");
+    Serial.println(salalayan.capacity());
 
     Serial.print("Used: ");
-    Serial.println(ubod.used());
+    Serial.println(salalayan.used());
 
     Serial.print("Free: ");
-    Serial.println(ubod.free());
+    Serial.println(salalayan.free());
 
-    printTest(
-        "Used == 1",
-        ubod.used() == 1
+    printResult(
+        "Used == 3",
+        salalayan.used() == 3
     );
 
-    printTest(
-        "Free == Capacity - 1",
-        ubod.free()
-            == ubod.capacity() - 1
-    );
-
-
-    // --------------------------------------------------
-    // 9. Occupancy Invariant
-    // --------------------------------------------------
-
-    Serial.println();
-    Serial.println("9. Occupancy Invariant");
-    Serial.println("----------------------------------------");
-
-    bool occupiedInvariant =
-        slot1->hasEngine() &&
-        slot1->engine() != nullptr &&
-        slot1->isOccupied() &&
-        !slot1->isFree() &&
-        slot1->availability()
-            == UbodSlotAvailability::Occupied;
-
-    printTest(
-        "Engine attached => OCCUPIED",
-        occupiedInvariant
+    printResult(
+        "Free == Capacity - 3",
+        salalayan.free() ==
+        salalayan.capacity() - 3
     );
 
 
     // --------------------------------------------------
-    // 10. Detach
+    // 8. Reject Second Sapad
     // --------------------------------------------------
 
-    Serial.println();
-    Serial.println("10. Detach primaryComms");
-    Serial.println("----------------------------------------");
+    printSection(8, "Reject Second Sapad");
 
-    result = ubod.detach(1);
-
-    printTest(
-        "detach()",
-        result
-    );
-
-    printSlot(slot1);
-
-    printTest(
-        "Engine reference cleared",
-        slot1->engine() == nullptr
-    );
-
-    printTest(
-        "Slot becomes FREE",
-        slot1->isFree()
-    );
-
-
-    // --------------------------------------------------
-    // 11. Reject Double Detach
-    // --------------------------------------------------
-
-    Serial.println();
-    Serial.println("11. Reject Double Detach");
-    Serial.println("----------------------------------------");
-
-    result = ubod.detach(1);
-
-    printTest(
-        "Second detach() rejected",
-        !result
-    );
-
-    printSlot(slot1);
-
-
-    // --------------------------------------------------
-    // 12. Reattach Different Engine
-    // --------------------------------------------------
-
-    Serial.println();
-    Serial.println("12. Attach telemetry");
-    Serial.println("----------------------------------------");
-
-    result = ubod.attach(
+    result = salalayan.attach(
         1,
         &telemetry
     );
 
-    printTest(
-        "attach(telemetry)",
+    printResult(
+        "Second Sapad rejected",
+        !result
+    );
+
+    printResult(
+        "Original Sapad preserved",
+        salpakan1->sapad() == &primaryComms
+    );
+
+    printSalpakanTable();
+
+
+    // --------------------------------------------------
+    // 9. Find Free Salpakan
+    // --------------------------------------------------
+
+    printSection(9, "Find Free Salpakan");
+
+    Salpakan* freeSalpakan =
+        salalayan.findFree();
+
+    if (freeSalpakan != nullptr) {
+
+        Serial.print(
+            "First FREE Salpakan ID: "
+        );
+
+        Serial.println(
+            freeSalpakan->id()
+        );
+
+        printResult(
+            "Found Salpakan is FREE",
+            freeSalpakan->isFree()
+        );
+
+    } else {
+
+        Serial.println(
+            "No FREE Salpakan found."
+        );
+    }
+
+
+    // --------------------------------------------------
+    // 10. Detach Sapad
+    // --------------------------------------------------
+
+    printSection(10, "Detach Sapad");
+
+    result = salalayan.detach(2);
+
+    printResult(
+        "Detach telemetry from Salpakan #2",
         result
     );
 
-    printTest(
-        "engine() == telemetry",
-        slot1->engine() == &telemetry
+    printResult(
+        "Salpakan #2 has no Sapad",
+        !salpakan2->hasSapad()
     );
 
-    printSlot(slot1);
+    printResult(
+        "Salpakan #2 becomes FREE",
+        salpakan2->isFree()
+    );
+
+    printSalpakanTable();
 
 
     // --------------------------------------------------
-    // 13. Engine Ownership Boundary
+    // 11. Reattach Different Sapad
     // --------------------------------------------------
 
-    Serial.println();
-    Serial.println("13. Engine Ownership Boundary");
-    Serial.println("----------------------------------------");
+    printSection(11, "Reattach Sapad");
 
-    Serial.println(
-        "Engine objects are created outside Ubod."
+    result = salalayan.attach(
+        2,
+        &primaryComms
     );
 
-    Serial.println(
-        "Ubod stores only their addresses."
-    );
-
-    Serial.println(
-        "Ubod does not create the Engine."
-    );
-
-    Serial.println(
-        "Ubod does not destroy the Engine."
-    );
-
-    Serial.println(
-        "detach() only clears the attachment."
-    );
-
-
-    // --------------------------------------------------
-    // 14. Final Detach
-    // --------------------------------------------------
-
-    Serial.println();
-    Serial.println("14. Final Detach");
-    Serial.println("----------------------------------------");
-
-    result = ubod.detach(1);
-
-    printTest(
-        "detach(telemetry)",
+    printResult(
+        "Attach Sapad to freed Salpakan",
         result
     );
 
-    printSlot(slot1);
+    printResult(
+        "Salpakan #2 now occupied",
+        salpakan2->isOccupied()
+    );
+
+    printResult(
+        "Salpakan #2 Sapad reference valid",
+        salpakan2->sapad() ==
+        &primaryComms
+    );
+
+    printSalpakanTable();
 
 
     // --------------------------------------------------
-    // 15. Final Invariant
+    // 12. Lookup by Name
     // --------------------------------------------------
 
-    Serial.println();
-    Serial.println("15. Final Slot Invariant");
-    Serial.println("----------------------------------------");
+    printSection(12, "Lookup Salpakan by Name");
 
-    bool freeInvariant =
-        slot1->engine() == nullptr &&
-        !slot1->hasEngine() &&
-        slot1->isFree() &&
-        !slot1->isOccupied() &&
-        slot1->availability()
-            == UbodSlotAvailability::Free;
+    Salpakan* results[4] = {};
 
-    printTest(
-        "No Engine => FREE",
-        freeInvariant
+    unsigned int found =
+        salalayan.findByName(
+            "Slot Name 3",
+            results,
+            4
+        );
+
+    Serial.print(
+        "Matches for \"Slot Name 3\": "
+    );
+
+    Serial.println(found);
+
+    for (
+        unsigned int i = 0;
+        i < found;
+        ++i
+    ) {
+        Serial.print(
+            "Found Salpakan ID: "
+        );
+
+        Serial.println(
+            results[i]->id()
+        );
+    }
+
+
+    // --------------------------------------------------
+    // 13. Multiple Salalayan
+    // --------------------------------------------------
+
+    printSection(13, "Local Salpakan Identity");
+
+    Salalayan secondarySalalayan;
+
+    Salpakan* primarySalpakan1 =
+        salalayan.get(1);
+
+    Salpakan* secondarySalpakan1 =
+        secondarySalalayan.get(1);
+
+    printResult(
+        "Primary Salalayan has Salpakan #1",
+        primarySalpakan1 != nullptr
+    );
+
+    printResult(
+        "Secondary Salalayan has Salpakan #1",
+        secondarySalpakan1 != nullptr
+    );
+
+    printResult(
+        "Both have local ID == 1",
+        primarySalpakan1->id() == 1 &&
+        secondarySalpakan1->id() == 1
+    );
+
+    printResult(
+        "They are different Salpakan objects",
+        primarySalpakan1 != secondarySalpakan1
     );
 
 
     // --------------------------------------------------
-    // 16. Lifecycle Boundary
+    // 14. Lifecycle Boundary
     // --------------------------------------------------
-    //
-    // Mahalaga: ang Engine attachment at ang
-    // Slot lifecycle state ay dalawang magkaibang
-    // konsepto sa v0.1.14.
-    //
 
-    Serial.println();
-    Serial.println("16. Slot Lifecycle Boundary");
-    Serial.println("----------------------------------------");
-
-    printSlot(slot1);
+    printSection(14, "Current Lifecycle Boundary");
 
     Serial.println(
-        "Attachment does not start the Slot."
+        "Salpakan currently owns its experimental lifecycle."
     );
 
     Serial.println(
-        "Attachment does not change lifecycle state."
+        "Sapad has no execution contract yet."
     );
 
     Serial.println(
-        "Lifecycle remains controlled by begin()/update()."
+        "Attachment does not start a Sapad."
+    );
+
+    Serial.println(
+        "Attachment only establishes a modular relationship."
+    );
+
+    Serial.println(
+        "Runtime coordination is intentionally deferred."
+    );
+
+
+    // --------------------------------------------------
+    // 15. Terminology Validation
+    // --------------------------------------------------
+
+    printSection(15, "Canonical Terminology");
+
+    Serial.println(
+        "Silid"
+    );
+
+    Serial.println(
+        "  -> Salalayan"
+    );
+
+    Serial.println(
+        "       -> Salpakan"
+    );
+
+    Serial.println(
+        "            -> Sapad"
     );
 
 
@@ -512,9 +624,9 @@ void setup() {
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("========================================");
-    Serial.println("       EXPERIMENT COMPLETE");
-    Serial.println("========================================");
+    Serial.println("============================================================");
+    Serial.println("               EXPERIMENT COMPLETE");
+    Serial.println("============================================================");
 }
 
 
