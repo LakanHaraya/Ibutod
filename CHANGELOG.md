@@ -4,6 +4,41 @@ Lahat ng kapansin-pansing pagbabago sa proyektong ito ay idodokumento sa file na
 Ang format ay batay sa [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Sa kasalukuyang eksperimental na yugto ng **Ubod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersiyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.13] — Pagkabit ng Engine sa Core Slot (*Engine Attachment to Core Slot*)
+### Idinagdag 
+- Idinagdag ang paunang `UbodEngine` attachment model para sa `UbodSlot`.
+- Idinagdag ang aktuwal na pag-iimbak ng attached Engine pointer sa loob ng `UbodSlot`.
+- Idinagdag ang `engine()` accessor para makuha ang kasalukuyang attached Engine.
+- Idinagdag ang const at non-const na bersiyon ng `engine()`.
+- Idinagdag ang `hasEngine()` para madaling matukoy kung may nakakabit na Engine sa Slot.
+- Inihanay ang `UbodSlotAvailability` sa aktuwal na pagkakaroon ng attached Engine.
+- Idinagdag ang Container-level `attached(id, engine)` upang manatiling gatekepeer ang `UbodContainer` sa attachment operation.
+## Binago
+- Ang dating parameterless na `attach()` ay pinalitan ng `attach(UbodEngine* engine)`.
+- Ang `OCCUPIED` state ay hindi na lamang simpleng manual availability marker, kinakatawan na nito ang pagkakaroon ng attached Engine.
+- Ang `detach()` ay nagtatanggal ng Engine reference sa Slot sa pamamagitan ng pagtatakda ng pointer sa `nullptr`.
+- Ang `detach()` ay hind sumisira o nagde-delete ng Engine, ang pagmamay-ari ng Engine ay nananatili sa application o caller.
+- Ang `UbodContainer::attach()` ay tumatanggap na rin ng `UbodEngine*` at ipinapasa ito sa target na Slot.
+## Sinubukan
+- Pagkuha ng Slot mula sa `UbodContainer`.
+- Pagpapatunay na walang Engine ang bagong Slot.
+- Pagtanggi sa `attach(nullptr)`.
+- Matagumpay na pag-attach ng valid na `UbodEngine`.
+- Pagpapatunay ng pointer identity ng attached Engine.
+- Pagtanggi sa pag-attach ng panibagong Engine sa `OCCUPIED` na Slot.
+- Matagumpay na `detach()` ng Engine mula sa Slot.
+- Pagpapatunay na nagiging `nullptr` ang Engine reference pagkatapos ng detach.
+- Muling pag-attach ng ibang Engine pagkatapos maging `FREE` ang SLot.
+- Paggamit ng `UbodContainer` bilang gatekeeper para sa `attach()` at `detach()` operations.
+## Tala
+- Ang `UbodSlot` ay hindi nagmamay-ari ng attached `UbodEngine`.
+- Hindi responsable ang `UbodSlot` sa paglikha o pagsira ng Engine object.
+- Ang `detach()` ay nagtatanggal lamang ng binding sa pagitan ng Slot at Engine.
+- Sa bersiyong ito, ang Engine attachment ay pointer-based at hindi gumagamit ng dynamic memory allocation.
+- Ang `OCCUPIED` ay inaasahang tumutugma sa pagkakaroon ng valid na attached Engine pointer.
+- Hindi pa tinutukoy ang execution model, scheduling model, Engine identity, o lifecycle contract ng `UbodEngine`.
+- Ang pagbabago sa `attach()` API ay isang breaking API change mula sa naunang bersiyon.
+
 ## [0.1.12] — Paglilinaw ng Semantika ng Attachment ng Slot (*Slot Attachment Semantics Alignment*)
 ### Binago 
 - Pinalitan ang `occupy()` ng `attach()` bilang pangunahing operasyon para markahan ang isang Slot bilang may nakakabit na Engine.

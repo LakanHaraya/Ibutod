@@ -1,5 +1,10 @@
 #pragma once
 
+// Minimal type boundary for objects attachable to an UbodSlot
+// Execution behavior is intentionally not defined yet.
+class UbodEngine {
+};
+
 enum class UbodSlotState {
     Initializing, 
     Ready,
@@ -19,8 +24,11 @@ class UbodSlot
 
         void begin();
         void update();
-        bool attach();
+        bool attach(UbodEngine* engine);
         bool detach();
+        UbodEngine* engine();
+        const UbodEngine* engine() const;
+        bool hasEngine() const;
 
         unsigned int slotId() const;
         bool isSlotIdValid() const;
@@ -42,6 +50,7 @@ class UbodSlot
         static constexpr unsigned int MaxSlotNameLength = 15;
         char _slotName[MaxSlotNameLength + 1] = {};
         bool _idValid = false;
+        UbodEngine* _engine = nullptr;
         UbodSlotAvailability _availability = UbodSlotAvailability::Free;
         UbodSlotState _state = UbodSlotState::Initializing;
         unsigned long _startTime = 0;
@@ -55,7 +64,7 @@ class UbodContainer {
         UbodContainer();
         UbodSlot* get(unsigned int id);
         const UbodSlot* get(unsigned int id) const;
-        bool attach(unsigned int id);
+        bool attach(unsigned int id, UbodEngine* engine);
         bool detach(unsigned int id);
         UbodSlot* findFree();
         unsigned int findBySlotName(const char* name, UbodSlot** results, unsigned int maxResults);

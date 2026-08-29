@@ -77,47 +77,40 @@ bool UbodSlot::setSlotName(const char* name) {
     return true;
 }
 
-const char* UbodSlot::slotName() const {
-    return _slotName;
-}
+const char* UbodSlot::slotName() const { return _slotName; }
 
 // --------------------------------------------------
 // Attachment
 // --------------------------------------------------
 
-bool UbodSlot::attach() {
-    if (!_idValid) {
-        return false;
-    }
-    if (_availability == UbodSlotAvailability::Occupied) {
-        return false;
-    }
+bool UbodSlot::attach(UbodEngine* engine) {
+    if (!_idValid) { return false; }
+    if (engine == nullptr) { return false; }
+    if (_availability == UbodSlotAvailability::Occupied) { return false; }
+    _engine = engine;
     _availability = UbodSlotAvailability::Occupied;
     return true;
 }
 
 bool UbodSlot::detach() {
-    if (!_idValid) {
-        return false;
-    }
-    if (_availability == UbodSlotAvailability::Free) {
-        return false;
-    }
+    if (!_idValid) { return false; }
+    if (_availability == UbodSlotAvailability::Free) { return false; }
+    _engine == nullptr;
     _availability = UbodSlotAvailability::Free;
     return true;
 }
 
-UbodSlotAvailability UbodSlot::availability() const {
-    return _availability;
-}
+UbodEngine* UbodSlot::engine() { return _engine; }
 
-bool UbodSlot::isFree() const {
-    return _availability == UbodSlotAvailability::Free;
-}
+const UbodEngine* UbodSlot::engine() const { return _engine; }
 
-bool UbodSlot::isOccupied() const {
-    return _availability == UbodSlotAvailability::Occupied;
-}
+bool UbodSlot::hasEngine() const { return _engine != nullptr; }
+
+UbodSlotAvailability UbodSlot::availability() const { return _availability; }
+
+bool UbodSlot::isFree() const { return _availability == UbodSlotAvailability::Free; }
+
+bool UbodSlot::isOccupied() const { return _availability == UbodSlotAvailability::Occupied; }
 
 // --------------------------------------------------
 // Lifecycle
@@ -176,12 +169,10 @@ const UbodSlot* UbodContainer::get(unsigned int id) const {
     return &_slots[id - 1];
 }
 
-bool UbodContainer::attach(unsigned int id) {
+bool UbodContainer::attach(unsigned int id, UbodEngine* engine) {
     UbodSlot* slot = get(id);
-    if (slot == nullptr) {
-        return false;
-    }
-    return slot->attach();
+    if (slot == nullptr) { return false; }
+    return slot->attach(engine);
 }
 
 bool UbodContainer::detach(unsigned int id) {
