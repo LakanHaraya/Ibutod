@@ -4,17 +4,26 @@
 UbodContainer ubod;
 
 // --------------------------------------------------
-// Test Engines
+// External Engines
 // --------------------------------------------------
+//
+// Ang mga Engine ay nililikha sa labas ng Ubod.
+// Hindi sila pagmamay-ari ng Ubod.
+//
+// Sa v0.1.14, UbodEngine ay minimal type boundary
+// lamang. Wala pa itong execution behavior.
+//
 
 UbodEngine primaryComms;
 UbodEngine telemetry;
 
+
 // --------------------------------------------------
-// Helpers
+// Helper: Print Slot
 // --------------------------------------------------
 
 void printSlot(const UbodSlot* slot) {
+
     if (slot == nullptr) {
         Serial.println("Slot: NOT FOUND");
         return;
@@ -27,13 +36,12 @@ void printSlot(const UbodSlot* slot) {
     Serial.print(slot->slotName());
     Serial.print("\"");
 
-    Serial.print(" | Availability: ");
-
-    if (slot->isFree()) {
-        Serial.print("FREE");
-    } else {
-        Serial.print("OCCUPIED");
-    }
+    Serial.print(" | ID: ");
+    Serial.print(
+        slot->isSlotIdValid()
+            ? "VALID"
+            : "INVALID"
+    );
 
     Serial.print(" | Engine: ");
 
@@ -43,172 +51,460 @@ void printSlot(const UbodSlot* slot) {
         Serial.print("NONE");
     }
 
+    Serial.print(" | Availability: ");
+
+    switch (slot->availability()) {
+
+        case UbodSlotAvailability::Free:
+            Serial.print("FREE");
+            break;
+
+        case UbodSlotAvailability::Occupied:
+            Serial.print("OCCUPIED");
+            break;
+    }
+
+    Serial.print(" | State: ");
+
+    switch (slot->state()) {
+
+        case UbodSlotState::Initializing:
+            Serial.print("INITIALIZING");
+            break;
+
+        case UbodSlotState::Ready:
+            Serial.print("READY");
+            break;
+
+        case UbodSlotState::Running:
+            Serial.print("RUNNING");
+            break;
+
+        case UbodSlotState::Invalid:
+            Serial.print("INVALID");
+            break;
+    }
+
     Serial.println();
 }
 
 
 // --------------------------------------------------
-// Setup
+// Helper: Boolean Test
+// --------------------------------------------------
+
+void printTest(
+    const char* label,
+    bool passed
+) {
+    Serial.print(label);
+    Serial.print(": ");
+    Serial.println(
+        passed
+            ? "PASS"
+            : "FAIL"
+    );
+}
+
+
+// --------------------------------------------------
+// Experiment
 // --------------------------------------------------
 
 void setup() {
+
     Serial.begin(115200);
     delay(2000);
 
     Serial.println();
-    Serial.println("==================================");
-    Serial.println("      UBOD v0.1.13 EXPERIMENT");
-    Serial.println("==================================");
+    Serial.println("========================================");
+    Serial.println("       UBOD v0.1.14 EXPERIMENT");
+    Serial.println("========================================");
 
 
     // --------------------------------------------------
-    // 1. Get Slot
+    // 1. Container
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[1] Getting Slot");
+    Serial.println("1. Container");
+    Serial.println("----------------------------------------");
+
+    Serial.print("Capacity: ");
+    Serial.println(ubod.capacity());
+
+    Serial.print("Used: ");
+    Serial.println(ubod.used());
+
+    Serial.print("Free: ");
+    Serial.println(ubod.free());
+
+
+    // --------------------------------------------------
+    // 2. Initial Slot
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("2. Initial Slot State");
+    Serial.println("----------------------------------------");
 
     UbodSlot* slot1 = ubod.get(1);
 
-    if (slot1 == nullptr) {
-        Serial.println("Failed to get Slot 1.");
-        return;
-    }
+    printSlot(slot1);
 
-    slot1->setSlotName("primaryComms");
+    printTest(
+        "Initial slot is FREE",
+        slot1 != nullptr &&
+        slot1->isFree()
+    );
+
+    printTest(
+        "Initial slot has NO engine",
+        slot1 != nullptr &&
+        !slot1->hasEngine() &&
+        slot1->engine() == nullptr
+    );
+
+
+    // --------------------------------------------------
+    // 3. Slot Naming
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("3. Slot Naming");
+    Serial.println("----------------------------------------");
+
+    bool result = slot1->setSlotName("primaryComms");
+
+    printTest(
+        "setSlotName(primaryComms)",
+        result
+    );
+
+    Serial.print("Slot name: ");
+    Serial.println(slot1->slotName());
+
+
+    // --------------------------------------------------
+    // 4. Reject nullptr Attachment
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("4. Reject nullptr Attachment");
+    Serial.println("----------------------------------------");
+
+    result = ubod.attach(1, nullptr);
+
+    printTest(
+        "attach(nullptr) rejected",
+        !result
+    );
 
     printSlot(slot1);
 
 
     // --------------------------------------------------
-    // 2. Initial Engine State
+    // 5. Attach First Engine
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[2] Initial Engine State");
+    Serial.println("5. Attach primaryComms");
+    Serial.println("----------------------------------------");
 
-    Serial.print("Has Engine: ");
-    Serial.println(slot1->hasEngine() ? "YES" : "NO");
+    result = ubod.attach(
+        1,
+        &primaryComms
+    );
 
-    Serial.print("Engine Pointer: ");
+    printTest(
+        "attach(primaryComms)",
+        result
+    );
 
-    if (slot1->engine() == nullptr) {
-        Serial.println("nullptr");
-    } else {
-        Serial.println("NOT NULL");
-    }
+    printSlot(slot1);
+
+    printTest(
+        "engine() == primaryComms",
+        slot1->engine() == &primaryComms
+    );
+
+    printTest(
+        "Slot becomes OCCUPIED",
+        slot1->isOccupied()
+    );
 
 
     // --------------------------------------------------
-    // 3. Null Attachment Test
+    // 6. Attachment Identity
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[3] Null Attachment Test");
+    Serial.println("6. Attachment Identity");
+    Serial.println("----------------------------------------");
 
-    Serial.print("attach(nullptr): ");
+    printTest(
+        "hasEngine() == true",
+        slot1->hasEngine()
+    );
 
-    if (ubod.attach(1, nullptr)) { Serial.println("UNEXPECTED SUCCESS"); }
-    else { Serial.println("REJECTED"); }
+    printTest(
+        "engine() is not nullptr",
+        slot1->engine() != nullptr
+    );
+
+    printTest(
+        "availability() == OCCUPIED",
+        slot1->availability()
+            == UbodSlotAvailability::Occupied
+    );
+
+
+    // --------------------------------------------------
+    // 7. Second Attachment
+    // --------------------------------------------------
+    //
+    // One Engine per Slot ang target behavior.
+    // Hindi dapat ma-overwrite ang kasalukuyang
+    // attachment habang occupied ang Slot.
+    //
+
+    Serial.println();
+    Serial.println("7. Reject Second Engine");
+    Serial.println("----------------------------------------");
+
+    result = ubod.attach(
+        1,
+        &telemetry
+    );
+
+    printTest(
+        "attach(telemetry) rejected",
+        !result
+    );
+
+    printTest(
+        "Original Engine preserved",
+        slot1->engine() == &primaryComms
+    );
 
     printSlot(slot1);
 
 
     // --------------------------------------------------
-    // 4. Attach Engine
+    // 8. Container Accounting
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[4] Attach Engine");
+    Serial.println("8. Container Accounting");
+    Serial.println("----------------------------------------");
 
-    Serial.print("attach(&primaryComms): ");
+    Serial.print("Used: ");
+    Serial.println(ubod.used());
 
-    if (ubod.attach(1, &primaryComms)) { Serial.println("SUCCESS"); } 
-    else { Serial.println("FAILED"); }
+    Serial.print("Free: ");
+    Serial.println(ubod.free());
+
+    printTest(
+        "Used == 1",
+        ubod.used() == 1
+    );
+
+    printTest(
+        "Free == Capacity - 1",
+        ubod.free()
+            == ubod.capacity() - 1
+    );
+
+
+    // --------------------------------------------------
+    // 9. Occupancy Invariant
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("9. Occupancy Invariant");
+    Serial.println("----------------------------------------");
+
+    bool occupiedInvariant =
+        slot1->hasEngine() &&
+        slot1->engine() != nullptr &&
+        slot1->isOccupied() &&
+        !slot1->isFree() &&
+        slot1->availability()
+            == UbodSlotAvailability::Occupied;
+
+    printTest(
+        "Engine attached => OCCUPIED",
+        occupiedInvariant
+    );
+
+
+    // --------------------------------------------------
+    // 10. Detach
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("10. Detach primaryComms");
+    Serial.println("----------------------------------------");
+
+    result = ubod.detach(1);
+
+    printTest(
+        "detach()",
+        result
+    );
+
+    printSlot(slot1);
+
+    printTest(
+        "Engine reference cleared",
+        slot1->engine() == nullptr
+    );
+
+    printTest(
+        "Slot becomes FREE",
+        slot1->isFree()
+    );
+
+
+    // --------------------------------------------------
+    // 11. Reject Double Detach
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("11. Reject Double Detach");
+    Serial.println("----------------------------------------");
+
+    result = ubod.detach(1);
+
+    printTest(
+        "Second detach() rejected",
+        !result
+    );
 
     printSlot(slot1);
 
 
     // --------------------------------------------------
-    // 5. Pointer Identity Test
+    // 12. Reattach Different Engine
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[5] Pointer Identity Test");
+    Serial.println("12. Attach telemetry");
+    Serial.println("----------------------------------------");
 
-    UbodEngine* attachedEngine = slot1->engine();
+    result = ubod.attach(
+        1,
+        &telemetry
+    );
 
-    Serial.print("Slot engine == primaryComms: ");
+    printTest(
+        "attach(telemetry)",
+        result
+    );
 
-    if (attachedEngine == &primaryComms) {
-        Serial.println("YES");
-    } else {
-        Serial.println("NO");
-    }
-
-
-    // --------------------------------------------------
-    // 6. Duplicate Attachment Test
-    // --------------------------------------------------
-
-    Serial.println();
-    Serial.println("[6] Duplicate Attachment Test");
-
-    Serial.print("attach(&telemetry): ");
-
-    if (ubod.attach(1, &telemetry)) { Serial.println("UNEXPECTED SUCCESS"); } 
-    else { Serial.println("REJECTED"); }
+    printTest(
+        "engine() == telemetry",
+        slot1->engine() == &telemetry
+    );
 
     printSlot(slot1);
 
 
     // --------------------------------------------------
-    // 7. Detach Engine
+    // 13. Engine Ownership Boundary
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[7] Detach Engine");
+    Serial.println("13. Engine Ownership Boundary");
+    Serial.println("----------------------------------------");
 
-    Serial.print("detach(): ");
+    Serial.println(
+        "Engine objects are created outside Ubod."
+    );
 
-    if (ubod.detach(1)) { Serial.println("SUCCESS"); }
-    else { Serial.println("FAILED"); }
+    Serial.println(
+        "Ubod stores only their addresses."
+    );
+
+    Serial.println(
+        "Ubod does not create the Engine."
+    );
+
+    Serial.println(
+        "Ubod does not destroy the Engine."
+    );
+
+    Serial.println(
+        "detach() only clears the attachment."
+    );
+
+
+    // --------------------------------------------------
+    // 14. Final Detach
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("14. Final Detach");
+    Serial.println("----------------------------------------");
+
+    result = ubod.detach(1);
+
+    printTest(
+        "detach(telemetry)",
+        result
+    );
 
     printSlot(slot1);
 
 
     // --------------------------------------------------
-    // 8. Verify Detached State
+    // 15. Final Invariant
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[8] Verify Detached State");
+    Serial.println("15. Final Slot Invariant");
+    Serial.println("----------------------------------------");
 
-    Serial.print("Has Engine: ");
-    Serial.println(slot1->hasEngine() ? "YES" : "NO");
+    bool freeInvariant =
+        slot1->engine() == nullptr &&
+        !slot1->hasEngine() &&
+        slot1->isFree() &&
+        !slot1->isOccupied() &&
+        slot1->availability()
+            == UbodSlotAvailability::Free;
 
-    Serial.print("Engine Pointer: ");
-
-    if (slot1->engine() == nullptr) {
-        Serial.println("nullptr");
-    } else {
-        Serial.println("NOT NULL");
-    }
+    printTest(
+        "No Engine => FREE",
+        freeInvariant
+    );
 
 
     // --------------------------------------------------
-    // 9. Reattach Another Engine
+    // 16. Lifecycle Boundary
     // --------------------------------------------------
+    //
+    // Mahalaga: ang Engine attachment at ang
+    // Slot lifecycle state ay dalawang magkaibang
+    // konsepto sa v0.1.14.
+    //
 
     Serial.println();
-    Serial.println("[9] Reattach Another Engine");
-
-    Serial.print("attach(&telemetry): ");
-
-    if (ubod.attach(1, &telemetry)) { Serial.println("SUCCESS"); }
-    else { Serial.println("FAILED"); }
+    Serial.println("16. Slot Lifecycle Boundary");
+    Serial.println("----------------------------------------");
 
     printSlot(slot1);
+
+    Serial.println(
+        "Attachment does not start the Slot."
+    );
+
+    Serial.println(
+        "Attachment does not change lifecycle state."
+    );
+
+    Serial.println(
+        "Lifecycle remains controlled by begin()/update()."
+    );
 
 
     // --------------------------------------------------
@@ -216,15 +512,11 @@ void setup() {
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("==================================");
-    Serial.println("      EXPERIMENT COMPLETE");
-    Serial.println("==================================");
+    Serial.println("========================================");
+    Serial.println("       EXPERIMENT COMPLETE");
+    Serial.println("========================================");
 }
 
-
-// --------------------------------------------------
-// Loop
-// --------------------------------------------------
 
 void loop() {
 }

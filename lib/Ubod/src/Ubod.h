@@ -51,7 +51,6 @@ class UbodSlot
         char _slotName[MaxSlotNameLength + 1] = {};
         bool _idValid = false;
         UbodEngine* _engine = nullptr;
-        UbodSlotAvailability _availability = UbodSlotAvailability::Free;
         UbodSlotState _state = UbodSlotState::Initializing;
         unsigned long _startTime = 0;
         bool isSlotNameValid(const char* name) const;

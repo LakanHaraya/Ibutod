@@ -4,6 +4,41 @@ Lahat ng kapansin-pansing pagbabago sa proyektong ito ay idodokumento sa file na
 Ang format ay batay sa [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Sa kasalukuyang eksperimental na yugto ng **Ubod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersiyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.14] — Hangganan ng Pagkakabit ng Engine (*Engine Attachment Boundary*)
+### Idinagdag
+- Idinagdag ang minimal na `UbodEngine` type bilang boundary para sa mga object na maaaring i-attach sa `UbodSLot`
+- Idinagdag ang `UbodSlot::attach(UbodEngine* engine)`.
+- Idinagdag ang `UbodSlot::detach()`.
+- Idinagdag ang `UbodSlot::engine()` para makuha ang kasalukuyang Engine reference.
+- Idinagdag ang `UbodSlot::hasEngine()`.
+- Idinagdag ang `UbodContainer::detach()`.
+### Binago
+- Ang Slot availability ay ibinabatay sa pagkakaroon ng attached Engine.
+- Ang `OCCUPIED` ay nangangahulugang may attached Engine.
+- Ang `FREE` ay nangangahulugang walang attached Engine.
+- Ang Slot lifecycle (`begin()` / `update()`) ay nananatiling hiwalay sa Engine attachment.
+- Nanatiling non-owning reference ang Engine attachment.
+### Sinubukan
+- Pagtanggi sa `nullptr` Engine attachment.
+- Matagumpay na attachment ng Engine.
+- Pagpapatunay ng Engine identity gamit ang `engine()`.
+- Pagtanggi sa pagpapalit ng kasalukuyang attached Engine.
+- Detachment ng Engine.
+- Pagtanggi sa double detach.
+- Muling pag-attach ng ibang Engine pagkatapos ng detach.
+- Container `used()` at `free()` accounting.
+- Pagpapatunay ng Engine-ay-`OCCUPIED` invariant.
+- Pagpapatunay ng Walang-Engine-ay-`FREE` invariant.
+- Pagpapatunay na hindi nililikha o winawasak ng Ubod ang Engine.
+### Tala
+- Ang `UbodEngine` ay minimal type boundary pa lamang, wala pa itong execution contract.
+- Ang Engine ay nililikha at pinamamahalaan sa labas ng Ubod.
+- Ang `UbodSlot` ay nag-iimbak lamang ng Engine address at hindi nagmamay-ari ng Engine object.
+- Ang `detach()` ay nag-aalis lamang ng attachment reference.
+- Hindi pa tinutukoy kung maaaring i-attach ang iisang Engine sa maraming Slot.
+- Hindi pa tinutukoy ang Engine execution, scheduling, `run()`/`stop()`, o Engine lifecycle callbacks.
+- Nanatiling static at bounded ang memory model.
+
 ## [0.1.13] — Pagkabit ng Engine sa Core Slot (*Engine Attachment to Core Slot*)
 ### Idinagdag 
 - Idinagdag ang paunang `UbodEngine` attachment model para sa `UbodSlot`.
