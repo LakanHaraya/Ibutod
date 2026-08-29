@@ -4,6 +4,32 @@ Lahat ng kapansin-pansing pagbabago sa proyektong ito ay idodokumento sa file na
 Ang format ay batay sa [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Sa kasalukuyang eksperimental na yugto ng **Ubod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersiyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.18] — Introspeksiyong Pang-estruktura ng Salalayan (*Salalayan Structural Instrospection*)
+### Idinagdag
+- Mga structural introspection method para sa `Salalayan`:
+    - `enabled()` para magbalik ng bilang ng mga enabled na Salpakan.
+    - `disabled()` para magbalik ng bilang ng mga disabled na Salpakan.
+    - `isEmpty()` para suriin kung walang nakakabit na Sapad sa anumang Salpakan.
+    - `isFull()` para suriin kung lahat ng Salpakan ay may nakakabit na Sapad.
+### Binago
+- Pinalawak ang kakayahan ng `Salalayan` sa pagsusuri ng kasalukuyang structural state nito.
+- Nilinaw ang pagkakaiba ng occupancy at enablement bilang magkahiwalay na dimension ng estado.
+### Sinubukan
+- Initial structural state ng Salalayan.
+- Occupancy accounting:
+    - `used() + free() == capacity()`
+- Enablement accounting:
+    - `enabled() + disabled() == capacity()`
+- Relationship ng occupancy at enablement:
+    - `enabled() <= used()`
+- Pagkakaiba ng `FULL` structural state at operational enablement.
+- Structural state pagkatapos ng attachment, enablement, disablement, at detachment.
+### Tala
+- Ang `FULL` ay tumutukoy lamang sa attachment occupancy at hindi nangangahulugang lahat ng Salpakan ay enabled.
+- Ang isang occupied na Salpakan ay maaaring manatiling disabled.
+- Hindi pa rin nagdadagdag ang Ubod ng Sapad lifecycle, execution behavior, scheduler, o system policy.
+- Nanatiling magaan at structural ang responsabilidad ng Salalayan.
+
 ## [0.1.17] — Identidad ng Salalayan at Pinamamagitang Kontrol (*Salalayan Identity and Mediated Control*)
 ### Idinagdag
 - Opsiyonal na pangalan para sa `Salalayan`.

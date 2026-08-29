@@ -277,9 +277,7 @@ unsigned int Salalayan::findByName(
     return foundCount;
 }
 
-unsigned int Salalayan::capacity() const {
-    return Capacity;
-}
+unsigned int Salalayan::capacity() const { return Capacity;}
 
 unsigned int Salalayan::used() const {
     unsigned int count = 0;
@@ -289,6 +287,18 @@ unsigned int Salalayan::used() const {
     return count;
 }
 
-unsigned int Salalayan::free() const {
-    return Capacity - used();
+unsigned int Salalayan::free() const { return Capacity - used(); }
+
+unsigned int Salalayan::enabled() const {
+    unsigned int count = 0;
+    for (unsigned int i = 0; i < Capacity; ++i) {
+        if (_salpakan[i].isEnabled()) { ++count; }
+    }
+    return count;
 }
+
+unsigned int Salalayan::disabled() const { return Capacity - enabled(); }
+
+bool Salalayan::isEmpty() const { return used() == 0; }
+
+bool Salalayan::isFull() const { return used() == Capacity; }

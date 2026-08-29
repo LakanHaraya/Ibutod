@@ -85,6 +85,10 @@ class Salalayan {
         unsigned int capacity() const;
         unsigned int used() const;
         unsigned int free() const;
+        unsigned int enabled() const;
+        unsigned int disabled() const;
+        bool isEmpty() const;
+        bool isFull() const;
 
     private:
         static constexpr unsigned int MaxNameLength = 15;
