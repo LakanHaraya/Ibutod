@@ -4,9 +4,33 @@ Lahat ng kapansin-pansing pagbabago sa proyektong ito ay idodokumento sa file na
 Ang format ay batay sa [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Sa kasalukuyang eksperimental na yugto ng **Ubod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersiyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] — Pagpapagana ng Salpakan (*Salpakan Enablement*)
+### Idinagdag
+- Idinagdag ang `SalpakanEnablement` bilang hiwalay na konsepto mula sa lifecycle state.
+- Idinagdag ang `enable()`, `disable()`, at `isEnabled()` sa `Salpakan`.
+- Idinadgdag ang panuntunang hindi maaaring i-enable ang Salpakan kung walang nakakabit na Sapad.
+- Idinagdag ang proteksiyon laban sa `detach()` habang naka-enable ang Salpakan.
+### Binago
+- Ang attachment ay maaari pa ring gawin habang `DISABLED`.
+- Ang `attach()` ay hindi awtomatikong nag-e-enable ng Salpakan.
+- Ang `detach()` ay maaari lamang gawin kapag `DISABLED`.
+### Sinubukan
+- Pagtanggi sa `enable()` kapag walang Sapad.
+- Pag-enable ng Salpakan na may nakakabit na Sapad.
+- Pagtanggi sa paulit-ulit na `enable()`
+- Pagtanggi sa `detach()` habang `ENABLED`.
+- `disable()` bago ang `detach()`.
+- Muling pag-attach matapos ang `detach()`.
+- Invariant: **Walang Sapad => FREE + DISABLED**.
+### Tala
+- Ang enablement ay kasalukuyang responsabilidad ng `Salpakan`.
+- Wala pa ring lifecycle o execution contract ang `Sapad`.
+- Wala pang lifecycle management ang `Salalayan`.
+- Nanatiling magaan at experimental, walang idinagdag na scheduler, dependecy manager, hot-swap, OTA, o iba pang higher-level mechanism.
+
 ## [0.1.15] — Paglipat sa Terminolohiyang Filipino (*Filipino Terminology Migration*)
 ### Binago
-- Pinalitan ang pangunahing terminolohiya ng Ubod upang gamitin ang mga canonical Filipino abstractions:
+- Pinalitan ang pangunahing terminolngohiya ng Ubod upang gamitin ang mga canonical Filipino abstractions:
     - `UbodContainer` → `Salalayan`
     - `UbodSlot` → `Salpakan`
     - `UbodEngine` → `Sapad`

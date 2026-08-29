@@ -17,6 +17,11 @@ enum class SalpakanAvailability {
     Occupied
 };
 
+enum class SalpakanEnablement {
+    Disabled, 
+    Enabled
+};
+
 class Salpakan
 {
     public:
@@ -39,6 +44,10 @@ class Salpakan
         bool isFree() const;
         bool isOccupied() const;
 
+        bool enable();
+        bool disable();
+        bool isEnabled() const;
+
         SalpakanState state() const;
         bool isReady() const;
         unsigned long uptime() const;
@@ -51,6 +60,7 @@ class Salpakan
         char _name[MaxNameLength + 1] = {};
         bool _idValid = false;
         Sapad* _sapad = nullptr;
+        SalpakanEnablement _enablement = SalpakanEnablement::Disabled;
         SalpakanState _state = SalpakanState::Initializing;
         unsigned long _startTime = 0;
         bool isNameValid(const char* name) const;

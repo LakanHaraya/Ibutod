@@ -1,634 +1,472 @@
 #include <Arduino.h>
 #include "Ubod.h"
 
-// ==================================================
-// UBOD v0.1.15 EXPERIMENT
-// Filipino Terminology Migration Validation
-// ==================================================
-
-
-// --------------------------------------------------
-// Salalayan
-// --------------------------------------------------
-
 Salalayan salalayan;
-
 
 // --------------------------------------------------
 // Test Sapad
 // --------------------------------------------------
 
 Sapad primaryComms;
-Sapad telemetry;
-Sapad diagnostics;
 
-
-// ==================================================
+// --------------------------------------------------
 // Helpers
-// ==================================================
-
-const char* availabilityText(SalpakanAvailability availability) {
-    switch (availability) {
-        case SalpakanAvailability::Free:
-            return "FREE";
-
-        case SalpakanAvailability::Occupied:
-            return "OCCUPIED";
-
-        default:
-            return "UNKNOWN";
-    }
-}
-
-
-const char* stateText(SalpakanState state) {
-    switch (state) {
-        case SalpakanState::Initializing:
-            return "INITIALIZING";
-
-        case SalpakanState::Ready:
-            return "READY";
-
-        case SalpakanState::Running:
-            return "RUNNING";
-
-        case SalpakanState::Invalid:
-            return "INVALID";
-
-        default:
-            return "UNKNOWN";
-    }
-}
-
-
-void printLine() {
-    Serial.println(
-        "+-----+------------------+---------+-----------+-------------+---------------+"
-    );
-}
-
-
-// --------------------------------------------------
-// Salpakan Table
 // --------------------------------------------------
 
-void printSalpakanHeader() {
-    printLine();
-
-    Serial.println(
-        "| ID  | NAME             | ID OK   | SAPAD     | AVAILABILITY| STATE         |"
-    );
-
-    printLine();
+const char* availabilityText(SalpakanAvailability value) {
+    return value == SalpakanAvailability::Free
+        ? "FREE"
+        : "OCCUPIED";
 }
 
+const char* enablementText(bool enabled) {
+    return enabled
+        ? "ENABLED"
+        : "DISABLED";
+}
 
-void printSalpakanRow(const Salpakan* salpakan) {
+void printTestResult(
+    const char* test,
+    bool result,
+    const Salpakan* salpakan
+) {
+    Serial.print(result ? "[PASS] " : "[FAIL] ");
+    Serial.println(test);
+
     if (salpakan == nullptr) {
-        Serial.println("| --- | NOT FOUND        | ---     | ---       | ---         | ---           |");
         return;
     }
 
-    char buffer[128];
-
-    snprintf(
-        buffer,
-        sizeof(buffer),
-        "| %-3u | %-16s | %-7s | %-9s | %-11s | %-13s |",
-        salpakan->id(),
-        salpakan->name(),
-        salpakan->isIdValid() ? "YES" : "NO",
-        salpakan->hasSapad() ? "ATTACHED" : "NONE",
-        availabilityText(salpakan->availability()),
-        stateText(salpakan->state())
+    Serial.print("        Enablement  : ");
+    Serial.println(
+        enablementText(salpakan->isEnabled())
     );
 
-    Serial.println(buffer);
+    Serial.print("        Availability : ");
+    Serial.println(
+        availabilityText(salpakan->availability())
+    );
+
+    Serial.print("        Sapad        : ");
+    Serial.println(
+        salpakan->hasSapad()
+            ? "ATTACHED"
+            : "NONE"
+    );
 }
 
-
-void printSalpakanTable() {
-    printSalpakanHeader();
-
-    for (unsigned int id = 1; id <= salalayan.capacity(); ++id) {
-        printSalpakanRow(salalayan.get(id));
+void printSlot(const Salpakan* salpakan) {
+    if (salpakan == nullptr) {
+        Serial.println("| NOT FOUND |");
+        return;
     }
 
-    printLine();
+    Serial.print("| ");
+    Serial.print(salpakan->id());
+
+    Serial.print(" | ");
+    Serial.print(
+        salpakan->hasSapad()
+            ? "YES"
+            : "NO"
+    );
+
+    Serial.print(" | ");
+    Serial.print(
+        availabilityText(
+            salpakan->availability()
+        )
+    );
+
+    Serial.print(" | ");
+    Serial.print(
+        enablementText(
+            salpakan->isEnabled()
+        )
+    );
+
+    Serial.println(" |");
 }
 
+void printTable(const Salalayan& salalayan) {
+    Serial.println(
+        "+----+-------+--------------+-----------+"
+    );
+    Serial.println(
+        "| ID | SAPAD | AVAILABILITY | ENABLEMENT |"
+    );
+    Serial.println(
+        "+----+-------+--------------+-----------+"
+    );
 
-// --------------------------------------------------
-// Result Helper
-// --------------------------------------------------
+    for (unsigned int i = 1;
+         i <= salalayan.capacity();
+         ++i) {
 
-void printResult(const char* label, bool result) {
-    Serial.print(label);
-    Serial.print(": ");
-    Serial.println(result ? "PASS" : "FAIL");
+        printSlot(salalayan.get(i));
+    }
+
+    Serial.println(
+        "+----+-------+--------------+-----------+"
+    );
 }
 
-
 // --------------------------------------------------
-// Section Helper
+// Experiment
 // --------------------------------------------------
 
-void printSection(unsigned int number, const char* title) {
+void setup() {
+    Serial.begin(115200);
+    delay(2000);
+
+    Salpakan* salpakan = salalayan.get(1);
+
     Serial.println();
-    Serial.print("[");
-    Serial.print(number);
-    Serial.print("] ");
-    Serial.println(title);
+    Serial.println(
+        "============================================================"
+    );
+    Serial.println(
+        "                 UBOD v0.1.16 EXPERIMENT"
+    );
+    Serial.println(
+        "              Salpakan Enablement Validation"
+    );
+    Serial.println(
+        "============================================================"
+    );
 
+    // --------------------------------------------------
+    // 1. Initial State
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[1] Initial Salpakan State");
     Serial.println(
         "------------------------------------------------------------"
     );
-}
 
+    printTable(salalayan);
 
-// ==================================================
-// Experiment
-// ==================================================
+    printTestResult(
+        "Initial Salpakan is DISABLED",
+        !salpakan->isEnabled(),
+        salpakan
+    );
 
-void setup() {
+    printTestResult(
+        "Initial Salpakan is FREE",
+        salpakan->isFree(),
+        salpakan
+    );
 
-    Serial.begin(115200);
+    printTestResult(
+        "Initial Salpakan has NO Sapad",
+        !salpakan->hasSapad(),
+        salpakan
+    );
 
-    delay(2000);
+    // --------------------------------------------------
+    // 2. Reject Enable Without Sapad
+    // --------------------------------------------------
 
     Serial.println();
-    Serial.println("============================================================");
-    Serial.println("             UBOD v0.1.15 EXPERIMENT");
-    Serial.println("       Filipino Terminology Migration Validation");
-    Serial.println("============================================================");
-
-
-    // --------------------------------------------------
-    // 1. Salalayan Overview
-    // --------------------------------------------------
-
-    printSection(1, "Salalayan Overview");
-
-    Serial.print("Capacity: ");
-    Serial.println(salalayan.capacity());
-
-    Serial.print("Used: ");
-    Serial.println(salalayan.used());
-
-    Serial.print("Free: ");
-    Serial.println(salalayan.free());
-
-    printSalpakanTable();
-
-
-    // --------------------------------------------------
-    // 2. Salpakan Identity
-    // --------------------------------------------------
-
-    printSection(2, "Salpakan Identity");
-
-    Salpakan* salpakan1 = salalayan.get(1);
-    Salpakan* salpakan2 = salalayan.get(2);
-    Salpakan* salpakan3 = salalayan.get(3);
-    Salpakan* salpakan4 = salalayan.get(4);
-
-    printResult(
-        "Salpakan #1 exists",
-        salpakan1 != nullptr
-    );
-
-    printResult(
-        "Salpakan #2 exists",
-        salpakan2 != nullptr
-    );
-
-    printResult(
-        "Salpakan #3 exists",
-        salpakan3 != nullptr
-    );
-
-    printResult(
-        "Salpakan #4 exists",
-        salpakan4 != nullptr
-    );
-
-    printResult(
-        "Salpakan #1 ID valid",
-        salpakan1 != nullptr &&
-        salpakan1->isIdValid()
-    );
-
-    printResult(
-        "Salpakan #2 ID valid",
-        salpakan2 != nullptr &&
-        salpakan2->isIdValid()
-    );
-
-    printResult(
-        "Salpakan #3 ID valid",
-        salpakan3 != nullptr &&
-        salpakan3->isIdValid()
-    );
-
-    printResult(
-        "Salpakan #4 ID valid",
-        salpakan4 != nullptr &&
-        salpakan4->isIdValid()
-    );
-
-    printSalpakanTable();
-
-
-    // --------------------------------------------------
-    // 3. Naming Salpakan
-    // --------------------------------------------------
-
-    printSection(3, "Salpakan Naming");
-
-    bool result;
-
-    result = salpakan1->setName("Slot Name 1");
-    printResult("Name Salpakan #1", result);
-
-    result = salpakan2->setName("Slot Name 2");
-    printResult("Name Salpakan #2", result);
-
-    result = salpakan3->setName("Slot Name 3");
-    printResult("Name Salpakan #3", result);
-
-    // result = salpakan4->setName("Slot Name 4");
-    printResult("Name Salpakan #4", result);
-
-    printSalpakanTable();
-
-
-    // --------------------------------------------------
-    // 4. Initial Availability
-    // --------------------------------------------------
-
-    printSection(4, "Initial Salpakan Availability");
-
-    bool allFree = true;
-
-    for (
-        unsigned int id = 1;
-        id <= salalayan.capacity();
-        ++id
-    ) {
-        Salpakan* salpakan = salalayan.get(id);
-
-        if (
-            salpakan == nullptr ||
-            !salpakan->isFree() ||
-            salpakan->hasSapad()
-        ) {
-            allFree = false;
-            break;
-        }
-    }
-
-    printResult(
-        "All Salpakan initially FREE",
-        allFree
-    );
-
-    printSalpakanTable();
-
-
-    // --------------------------------------------------
-    // 5. Attach Sapad
-    // --------------------------------------------------
-
-    printSection(5, "Attach Sapad");
-
-    result = salalayan.attach(
-        1,
-        &primaryComms
-    );
-
-    printResult(
-        "Attach primaryComms to Salpakan #1",
-        result
-    );
-
-
-    result = salalayan.attach(
-        2,
-        &telemetry
-    );
-
-    printResult(
-        "Attach telemetry to Salpakan #2",
-        result
-    );
-
-
-    result = salalayan.attach(
-        3,
-        &diagnostics
-    );
-
-    printResult(
-        "Attach diagnostics to Salpakan #3",
-        result
-    );
-
-    printSalpakanTable();
-
-
-    // --------------------------------------------------
-    // 6. Sapad Attachment Identity
-    // --------------------------------------------------
-
-    printSection(6, "Sapad Attachment Identity");
-
-    printResult(
-        "Salpakan #1 -> primaryComms",
-        salpakan1->sapad() == &primaryComms
-    );
-
-    printResult(
-        "Salpakan #2 -> telemetry",
-        salpakan2->sapad() == &telemetry
-    );
-
-    printResult(
-        "Salpakan #3 -> diagnostics",
-        salpakan3->sapad() == &diagnostics
-    );
-
-
-    // --------------------------------------------------
-    // 7. Salalayan Accounting
-    // --------------------------------------------------
-
-    printSection(7, "Salalayan Accounting");
-
-    Serial.print("Capacity: ");
-    Serial.println(salalayan.capacity());
-
-    Serial.print("Used: ");
-    Serial.println(salalayan.used());
-
-    Serial.print("Free: ");
-    Serial.println(salalayan.free());
-
-    printResult(
-        "Used == 3",
-        salalayan.used() == 3
-    );
-
-    printResult(
-        "Free == Capacity - 3",
-        salalayan.free() ==
-        salalayan.capacity() - 3
-    );
-
-
-    // --------------------------------------------------
-    // 8. Reject Second Sapad
-    // --------------------------------------------------
-
-    printSection(8, "Reject Second Sapad");
-
-    result = salalayan.attach(
-        1,
-        &telemetry
-    );
-
-    printResult(
-        "Second Sapad rejected",
-        !result
-    );
-
-    printResult(
-        "Original Sapad preserved",
-        salpakan1->sapad() == &primaryComms
-    );
-
-    printSalpakanTable();
-
-
-    // --------------------------------------------------
-    // 9. Find Free Salpakan
-    // --------------------------------------------------
-
-    printSection(9, "Find Free Salpakan");
-
-    Salpakan* freeSalpakan =
-        salalayan.findFree();
-
-    if (freeSalpakan != nullptr) {
-
-        Serial.print(
-            "First FREE Salpakan ID: "
-        );
-
-        Serial.println(
-            freeSalpakan->id()
-        );
-
-        printResult(
-            "Found Salpakan is FREE",
-            freeSalpakan->isFree()
-        );
-
-    } else {
-
-        Serial.println(
-            "No FREE Salpakan found."
-        );
-    }
-
-
-    // --------------------------------------------------
-    // 10. Detach Sapad
-    // --------------------------------------------------
-
-    printSection(10, "Detach Sapad");
-
-    result = salalayan.detach(2);
-
-    printResult(
-        "Detach telemetry from Salpakan #2",
-        result
-    );
-
-    printResult(
-        "Salpakan #2 has no Sapad",
-        !salpakan2->hasSapad()
-    );
-
-    printResult(
-        "Salpakan #2 becomes FREE",
-        salpakan2->isFree()
-    );
-
-    printSalpakanTable();
-
-
-    // --------------------------------------------------
-    // 11. Reattach Different Sapad
-    // --------------------------------------------------
-
-    printSection(11, "Reattach Sapad");
-
-    result = salalayan.attach(
-        2,
-        &primaryComms
-    );
-
-    printResult(
-        "Attach Sapad to freed Salpakan",
-        result
-    );
-
-    printResult(
-        "Salpakan #2 now occupied",
-        salpakan2->isOccupied()
-    );
-
-    printResult(
-        "Salpakan #2 Sapad reference valid",
-        salpakan2->sapad() ==
-        &primaryComms
-    );
-
-    printSalpakanTable();
-
-
-    // --------------------------------------------------
-    // 12. Lookup by Name
-    // --------------------------------------------------
-
-    printSection(12, "Lookup Salpakan by Name");
-
-    Salpakan* results[4] = {};
-
-    unsigned int found =
-        salalayan.findByName(
-            "Slot Name 3",
-            results,
-            4
-        );
-
-    Serial.print(
-        "Matches for \"Slot Name 3\": "
-    );
-
-    Serial.println(found);
-
-    for (
-        unsigned int i = 0;
-        i < found;
-        ++i
-    ) {
-        Serial.print(
-            "Found Salpakan ID: "
-        );
-
-        Serial.println(
-            results[i]->id()
-        );
-    }
-
-
-    // --------------------------------------------------
-    // 13. Multiple Salalayan
-    // --------------------------------------------------
-
-    printSection(13, "Local Salpakan Identity");
-
-    Salalayan secondarySalalayan;
-
-    Salpakan* primarySalpakan1 =
-        salalayan.get(1);
-
-    Salpakan* secondarySalpakan1 =
-        secondarySalalayan.get(1);
-
-    printResult(
-        "Primary Salalayan has Salpakan #1",
-        primarySalpakan1 != nullptr
-    );
-
-    printResult(
-        "Secondary Salalayan has Salpakan #1",
-        secondarySalpakan1 != nullptr
-    );
-
-    printResult(
-        "Both have local ID == 1",
-        primarySalpakan1->id() == 1 &&
-        secondarySalpakan1->id() == 1
-    );
-
-    printResult(
-        "They are different Salpakan objects",
-        primarySalpakan1 != secondarySalpakan1
-    );
-
-
-    // --------------------------------------------------
-    // 14. Lifecycle Boundary
-    // --------------------------------------------------
-
-    printSection(14, "Current Lifecycle Boundary");
-
+    Serial.println("[2] Enable Without Sapad");
     Serial.println(
-        "Salpakan currently owns its experimental lifecycle."
+        "------------------------------------------------------------"
+    );
+
+    bool result = salpakan->enable();
+
+    printTestResult(
+        "enable() rejected without Sapad",
+        !result,
+        salpakan
+    );
+
+    printTestResult(
+        "Salpakan remains DISABLED",
+        !salpakan->isEnabled(),
+        salpakan
+    );
+
+    // --------------------------------------------------
+    // 3. Attach While Disabled
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[3] Attach Sapad While Disabled");
+    Serial.println(
+        "------------------------------------------------------------"
+    );
+
+    result = salpakan->attach(&primaryComms);
+
+    printTestResult(
+        "attach(primaryComms)",
+        result,
+        salpakan
+    );
+
+    printTestResult(
+        "Sapad is attached",
+        salpakan->hasSapad(),
+        salpakan
+    );
+
+    printTestResult(
+        "Salpakan remains DISABLED",
+        !salpakan->isEnabled(),
+        salpakan
+    );
+
+    // --------------------------------------------------
+    // 4. Enable Occupied Salpakan
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[4] Enable Occupied Salpakan");
+    Serial.println(
+        "------------------------------------------------------------"
+    );
+
+    result = salpakan->enable();
+
+    printTestResult(
+        "enable() with Sapad",
+        result,
+        salpakan
+    );
+
+    printTestResult(
+        "Salpakan becomes ENABLED",
+        salpakan->isEnabled(),
+        salpakan
+    );
+
+    // --------------------------------------------------
+    // 5. Reject Repeated Enable
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[5] Reject Repeated Enable");
+    Serial.println(
+        "------------------------------------------------------------"
+    );
+
+    result = salpakan->enable();
+
+    printTestResult(
+        "Second enable() rejected",
+        !result,
+        salpakan
+    );
+
+    // --------------------------------------------------
+    // 6. Reject Detach While Enabled
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[6] Reject Detach While Enabled");
+    Serial.println(
+        "------------------------------------------------------------"
+    );
+
+    result = salpakan->detach();
+
+    printTestResult(
+        "detach() rejected while ENABLED",
+        !result,
+        salpakan
+    );
+
+    printTestResult(
+        "Sapad remains attached",
+        salpakan->hasSapad(),
+        salpakan
+    );
+
+    printTestResult(
+        "Salpakan remains ENABLED",
+        salpakan->isEnabled(),
+        salpakan
+    );
+
+    // --------------------------------------------------
+    // 7. Disable Salpakan
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[7] Disable Salpakan");
+    Serial.println(
+        "------------------------------------------------------------"
+    );
+
+    result = salpakan->disable();
+
+    printTestResult(
+        "disable()",
+        result,
+        salpakan
+    );
+
+    printTestResult(
+        "Salpakan becomes DISABLED",
+        !salpakan->isEnabled(),
+        salpakan
+    );
+
+    // --------------------------------------------------
+    // 8. Detach After Disable
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[8] Detach After Disable");
+    Serial.println(
+        "------------------------------------------------------------"
+    );
+
+    result = salpakan->detach();
+
+    printTestResult(
+        "detach() while DISABLED",
+        result,
+        salpakan
+    );
+
+    printTestResult(
+        "Sapad reference cleared",
+        !salpakan->hasSapad(),
+        salpakan
+    );
+
+    printTestResult(
+        "Salpakan remains DISABLED",
+        !salpakan->isEnabled(),
+        salpakan
+    );
+
+    // --------------------------------------------------
+    // 9. Reattach After Detach
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[9] Reattach After Detach");
+    Serial.println(
+        "------------------------------------------------------------"
+    );
+
+    result = salpakan->attach(&primaryComms);
+
+    printTestResult(
+        "Reattach primaryComms",
+        result,
+        salpakan
+    );
+
+    printTestResult(
+        "Sapad is attached again",
+        salpakan->hasSapad(),
+        salpakan
+    );
+
+    printTestResult(
+        "Reattached Salpakan remains DISABLED",
+        !salpakan->isEnabled(),
+        salpakan
+    );
+
+    // --------------------------------------------------
+    // 10. Final Disable + Detach
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[10] Final Detach Sequence");
+    Serial.println(
+        "------------------------------------------------------------"
+    );
+
+    result = salpakan->detach();
+
+    printTestResult(
+        "detach() while DISABLED",
+        result,
+        salpakan
+    );
+
+    // --------------------------------------------------
+    // 11. Final Invariants
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[11] Final Invariants");
+    Serial.println(
+        "------------------------------------------------------------"
+    );
+
+    bool invariant =
+        !salpakan->hasSapad() &&
+        salpakan->isFree() &&
+        !salpakan->isEnabled();
+
+    printTestResult(
+        "No Sapad => FREE + DISABLED",
+        invariant,
+        salpakan
+    );
+
+    // --------------------------------------------------
+    // 12. Experimental Contract
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[12] Experimental Contract");
+    Serial.println(
+        "------------------------------------------------------------"
     );
 
     Serial.println(
-        "Sapad has no execution contract yet."
+        "Disabled + Free     -> enable()  : REJECT"
     );
 
     Serial.println(
-        "Attachment does not start a Sapad."
+        "Disabled + Free     -> attach()  : ALLOW"
     );
 
     Serial.println(
-        "Attachment only establishes a modular relationship."
+        "Disabled + Occupied -> enable()  : ALLOW"
     );
 
     Serial.println(
-        "Runtime coordination is intentionally deferred."
-    );
-
-
-    // --------------------------------------------------
-    // 15. Terminology Validation
-    // --------------------------------------------------
-
-    printSection(15, "Canonical Terminology");
-
-    Serial.println(
-        "Silid"
+        "Enabled  + Occupied -> enable()  : REJECT"
     );
 
     Serial.println(
-        "  -> Salalayan"
+        "Enabled  + Occupied -> detach()  : REJECT"
     );
 
     Serial.println(
-        "       -> Salpakan"
+        "Enabled  + Occupied -> disable() : ALLOW"
     );
 
     Serial.println(
-        "            -> Sapad"
+        "Disabled + Occupied -> detach()  : ALLOW"
     );
-
 
     // --------------------------------------------------
     // Complete
     // --------------------------------------------------
 
     Serial.println();
-    Serial.println("============================================================");
-    Serial.println("               EXPERIMENT COMPLETE");
-    Serial.println("============================================================");
+    Serial.println(
+        "============================================================"
+    );
+    Serial.println(
+        "                  EXPERIMENT COMPLETE"
+    );
+    Serial.println(
+        "============================================================"
+    );
 }
-
 
 void loop() {
 }

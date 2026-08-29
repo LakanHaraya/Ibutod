@@ -79,6 +79,7 @@ bool Salpakan::attach(Sapad* sapad) {
 bool Salpakan::detach() {
     if (!_idValid) { return false; }
     if (_sapad == nullptr) { return false; }
+    if (isEnabled()) { return false; }
     _sapad = nullptr;
     return true;
 }
@@ -96,6 +97,27 @@ SalpakanAvailability Salpakan::availability() const {
 bool Salpakan::isFree() const { return _sapad == nullptr; }
 
 bool Salpakan::isOccupied() const { return _sapad != nullptr; }
+
+// --------------------------------------------------
+// Enablement
+// --------------------------------------------------
+
+bool Salpakan::enable() {
+    if (!_idValid) { return false; }
+    if (_sapad == nullptr) { return false; }
+    if (isEnabled()) { return false; }
+    _enablement = SalpakanEnablement::Enabled;
+    return true;
+}
+
+bool Salpakan::disable() {
+    if (!_idValid) { return false; }
+    if (!isEnabled()) { return false; }
+    _enablement = SalpakanEnablement::Disabled;
+    return true;
+}
+
+bool Salpakan::isEnabled() const { return _enablement == SalpakanEnablement::Enabled; }
 
 // --------------------------------------------------
 // Ikot-Buhay
