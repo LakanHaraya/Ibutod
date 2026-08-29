@@ -70,11 +70,15 @@ class Salalayan {
     public: 
         static constexpr unsigned int Capacity = 4;
         static_assert(Capacity >= 2 && Capacity <= 32, "Ang Kapasidad ng Salalayan ay dapat nasa pagitan ng 2 at 32.");
-        Salalayan();
+        explicit Salalayan(const char* name = nullptr);
+        bool setName(const char* name);
+        const char* name() const;
         Salpakan* get(unsigned int id);
         const Salpakan* get(unsigned int id) const;
         bool attach(unsigned int id, Sapad* sapad);
         bool detach(unsigned int id);
+        bool enable(unsigned int id);
+        bool disable(unsigned int id);
         Salpakan* findFree();
         unsigned int findByName(const char* name, Salpakan** results, unsigned int maxResults);
         unsigned int findByName(const char* name, const Salpakan** results, unsigned int maxResults) const;
@@ -83,5 +87,8 @@ class Salalayan {
         unsigned int free() const;
 
     private:
+        static constexpr unsigned int MaxNameLength = 15;
+        char _name[MaxNameLength + 1] = {};
         Salpakan _salpakan[Capacity];
+        bool isNameValid(const char* name) const;
 };

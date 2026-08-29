@@ -146,7 +146,45 @@ unsigned long Salpakan::uptime() const { return millis() - _startTime; }
 // Salalayan
 // --------------------------------------------------
 
-Salalayan::Salalayan() {
+bool Salalayan::isNameValid(const char* name) const {
+    if (name == nullptr || name[0] == '\0') { return false; }
+    unsigned int i = 0;
+    bool hasNonWhiteSpace = false;
+    while (name[i] != '\0' && i < MaxNameLength) {
+        if (
+            name[i] != ' ' &&
+            name[i] != '\t' &&
+            name[i] != '\n' &&
+            name[i] != '\r'
+        ) {
+            hasNonWhiteSpace = true;
+        }
+        ++i;
+    }
+    return name[i] == '\0' && hasNonWhiteSpace;
+}
+
+bool Salalayan::setName(const char* name) {
+    if (name == nullptr) {
+        _name[0] = '\0';
+        return true;
+    }
+    if (!isNameValid(name)) { return false; }
+    unsigned int i = 0; 
+    while (
+        name[i] != '\0' &&
+        i < MaxNameLength
+    ) { ++i; }
+    if (name[i] != '\0') { return false; }
+    for (unsigned int j = 0; j < i; ++j) { _name[j] = name[j]; }
+    _name[i] = '\0'; 
+    return true;
+}
+
+const char* Salalayan::name() const { return _name; }
+
+Salalayan::Salalayan(const char* name) {
+    if (name != nullptr) { setName(name); }
     for (unsigned int i = 0; i < Capacity; ++i) {
         _salpakan[i] = Salpakan(i + 1);
     }
@@ -172,6 +210,18 @@ bool Salalayan::detach(unsigned int id) {
     Salpakan* salpakan = get(id);
     if (salpakan == nullptr) { return false; }
     return salpakan->detach();
+}
+
+bool Salalayan::enable(unsigned int id) {
+    Salpakan* salpakan = get(id);
+    if (salpakan == nullptr) { return false; }
+    return salpakan->enable();
+}
+
+bool Salalayan::disable(unsigned int id) {
+    Salpakan* salpakan = get(id);
+    if (salpakan == nullptr) { return false; }
+    return salpakan->disable();
 }
 
 Salpakan* Salalayan::findFree() {

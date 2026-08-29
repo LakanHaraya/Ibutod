@@ -4,6 +4,29 @@ Lahat ng kapansin-pansing pagbabago sa proyektong ito ay idodokumento sa file na
 Ang format ay batay sa [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Sa kasalukuyang eksperimental na yugto ng **Ubod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersiyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.17] — Identidad ng Salalayan at Pinamamagitang Kontrol (*Salalayan Identity and Mediated Control*)
+### Idinagdag
+- Opsiyonal na pangalan para sa `Salalayan`.
+- Kakayahang magtakda at mag-clear ng pangalan ng `Salalayan`.
+- `enable()` at `disable()` mediation sa `Salalayan` para sa mga `Salpakan` nito.
+### Binago
+- Pinalawak ang responsabilidad ng `Salalayan` bilang organizational at control boundary para sa mga `Salpakan`.
+- Pinanatili ang enablement state bilang katangian ng mismong `Salpakan`.
+- Hindi pinapayagang ma-enable ang isang `Salpakan` na walang nakakabit na `Sapad`.
+### Sinubukan
+- Opsiyonal na pagpapangalan sa `Salpakan`
+- Pagtakda at pag-clear ng pangalan ng `Salalayan`.
+- Salalayan-mediated enable at disable ng `Salpakan`.
+- Pagtanggi sa pag-enable nang walang lamang `Salpakan`.
+- Boundary checking para sa invalid na Salpakan ID.
+- Pagpapanatili ng attachment identity habang nagbabago ang enablement.
+- Detachment ng `Sapad` mula sa disabled na `Salpakan`.
+### Tala
+- Walang lifecycle mechanism na idinagdag sa `Salalayan`.
+- Ang `Salalayan` ay hindi nagmamay-ari o sumisira sa mga `Sapad`.
+- Ang enablement ay nananatiling hiwalay na konsepto mula sa attachment.
+- Ang runtime execution contract ng `Sapad` ay hindi pa saklaw ng bersiyong ito.
+
 ## [0.1.16] — Pagpapagana ng Salpakan (*Salpakan Enablement*)
 ### Idinagdag
 - Idinagdag ang `SalpakanEnablement` bilang hiwalay na konsepto mula sa lifecycle state.
