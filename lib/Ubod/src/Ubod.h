@@ -4,7 +4,6 @@ enum class UbodSlotState {
     Initializing, 
     Ready,
     Running,
-    Released,
     Invalid
 };
 
@@ -20,15 +19,14 @@ class UbodSlot
 
         void begin();
         void update();
-        void release();
+        bool attach();
+        bool detach();
 
         unsigned int slotId() const;
         bool isSlotIdValid() const;
         bool setSlotName(const char* name);
         const char* slotName() const;
 
-        bool occupy();
-        bool free();
         UbodSlotAvailability availability() const;
         bool isFree() const;
         bool isOccupied() const;
@@ -47,7 +45,6 @@ class UbodSlot
         UbodSlotAvailability _availability = UbodSlotAvailability::Free;
         UbodSlotState _state = UbodSlotState::Initializing;
         unsigned long _startTime = 0;
-        unsigned long _finalUptime = 0;
         bool isSlotNameValid(const char* name) const;
 };
 
@@ -58,8 +55,8 @@ class UbodContainer {
         UbodContainer();
         UbodSlot* get(unsigned int id);
         const UbodSlot* get(unsigned int id) const;
-        bool occupy(unsigned int id);
-        bool free(unsigned int id);
+        bool attach(unsigned int id);
+        bool detach(unsigned int id);
         UbodSlot* findFree();
         unsigned int findBySlotName(const char* name, UbodSlot** results, unsigned int maxResults);
         unsigned int findBySlotName(const char* name, const UbodSlot** results, unsigned int maxResults) const;

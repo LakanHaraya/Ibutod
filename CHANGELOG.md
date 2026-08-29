@@ -2,7 +2,35 @@
 Lahat ng kapansin-pansing pagbabago sa proyektong ito ay idodokumento sa file na ito.
 
 Ang format ay batay sa [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-Sa kasalukuyang eksperimental na yugto ng **Ubod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Sa kasalukuyang eksperimental na yugto ng **Ubod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersiyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.1.12] — Paglilinaw ng Semantika ng Attachment ng Slot (*Slot Attachment Semantics Alignment*)
+### Binago 
+- Pinalitan ang `occupy()` ng `attach()` bilang pangunahing operasyon para markahan ang isang Slot bilang may nakakabit na Engine.
+- Pinalitan ang `free()` ng `detach()` bilang operasyon para alisin ang attachment mula sa isang Slot.
+- Pinalitan ang `UbodContainer::occupy(id)` ng `UbodContainer::attach(id)`
+- Pinalitan ang `UbodContainer::free(id)` ng `UbodContainer::detach(id)`
+- Inalis ang `release()` API mula sa `UbodSlot`.
+- Inalis ang `Released` state mula sa `UbodSlotState`.
+- Inalis ang `_finalUptime` dahil wala nang Slot release lifecycle sa kasalukuyang modelo.
+- Inihanay ang `FREE` at `OCCUPIED` availability sa konsepto ng Engine attachment sa Slot.
+### Sinubukan
+- Paunang estado ng Slot bilang `FREE`
+- Paglipat ng Slot mula `FREE` patungong `OCCUPIED` gamit ang `attach()`.
+- Paglipat ng Slot mula `OCCUPIED` patungong `FREE` gamit ang `detach()`.
+- Pagtanggi sa paulit-ulit na `attach()` sa isang `OCCUPIED` Slot.
+- Pagtanggi sa paulit-ulit na `detach()` sa isang `FREE` Slot.
+- Paggamit ng `UbodContainer::attach(id)` at `UbodContainer::detach(id)` bilang conatiner-level operation.
+- Pagbilang ng `OCCUPIED` at `FREE` Slots gamit ang `used()` at `findFree()`.
+- Pagpapatunay na magkahiwalay ang Slot lifecycle at attachment status.
+### Tala
+- Ang `attach()` at `detach()` ay kasalukuyang naglalarawan ng attachment state transition ng Slot.
+- Sa bersiyong ito, wala pang aktuwal na `Core Engine` object na ipinapasa o iniimbak sa `UbodSlot`.
+- Ang `OCCUPIED` ay nangangahulugang may conceptual attachment ang Slot, habang ang `FREE` ay nangangahulugang walang attachment.
+- Hindi pa tinutukoy ang Engine identity, Engine ownership, lifetime management, o kongkretong attachment reference.
+- Ang Slot lifecycle (`Initializing`, `Ready`, at `Running`) ay nananatiling hiwalay sa attachment status (`FREE` at `OCCUPIED`).
+- Ang pagtanggal ng `release()` at `Released` state ay isang breaking API at semantic change.
+- Ang memory model ay nananatiling static at bounded, walang dynamic memory allocation.
 
 ## [0.1.11] — Pagtutuwid ng Terminolohiya sa Core Slot (*Core Slot Terminology Alignment*)
 ### Binago 
