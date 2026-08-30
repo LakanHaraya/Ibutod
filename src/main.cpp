@@ -1,31 +1,62 @@
 #include <Arduino.h>
-#include <Ubod.h>
-
-Sapad imu;
-Sapad gnss;
-Sapad telemetry;
-Sapad diagnostics;
-
+#include "Ubod.h"
 
 // --------------------------------------------------
-// Helper
+// Test Sapad
 // --------------------------------------------------
 
-void printResult(const char* label, bool result) {
+class TestSapad : public Sapad {
+};
+
+// --------------------------------------------------
+// Helpers
+// --------------------------------------------------
+
+void printResult(const char* label, bool passed) {
     Serial.print(label);
     Serial.print(": ");
-    Serial.println(result ? "PASS" : "FAIL");
+    Serial.println(passed ? "PASS" : "FAIL");
 }
 
+const char* enablementName(const Salpakan* salpakan) {
+    if (salpakan == nullptr) {
+        return "N/A";
+    }
+
+    return salpakan->isEnabled()
+        ? "ENABLED"
+        : "DISABLED";
+}
+
+const char* availabilityName(const Salpakan* salpakan) {
+    if (salpakan == nullptr) {
+        return "N/A";
+    }
+
+    return salpakan->isOccupied()
+        ? "OCCUPIED"
+        : "FREE";
+}
+
+// --------------------------------------------------
+// Salalayan Overview
+// --------------------------------------------------
 
 template <unsigned int Capacity>
-void printSalalayanInfo(
+void printSalalayanOverview(
     const char* label,
     const Salalayan<Capacity>& salalayan
 ) {
     Serial.println();
     Serial.println(label);
-    Serial.println("----------------------------------------");
+    Serial.println("------------------------------------------------------------");
+
+    Serial.print("Name: ");
+    Serial.println(
+        salalayan.name()[0] != '\0'
+            ? salalayan.name()
+            : "(unnamed)"
+    );
 
     Serial.print("Capacity: ");
     Serial.println(salalayan.capacity());
@@ -47,8 +78,74 @@ void printSalalayanInfo(
 
     Serial.print("Full: ");
     Serial.println(salalayan.isFull() ? "YES" : "NO");
+
+    Serial.println();
+
+    Serial.println("+----+----------+------------+-----------+");
+    Serial.println("| ID | SAPAD    | ENABLEMENT | AVAIL     |");
+    Serial.println("+----+----------+------------+-----------+");
+
+    for (unsigned int id = 1; id <= Capacity; ++id) {
+
+        const Salpakan* salpakan = salalayan.get(id);
+
+        Serial.print("| ");
+
+        if (id < 10) {
+            Serial.print(id);
+            Serial.print("  ");
+        } else {
+            Serial.print(id);
+            Serial.print(" ");
+        }
+
+        Serial.print("| ");
+
+        if (salpakan->hasSapad()) {
+            Serial.print("ATTACHED ");
+        } else {
+            Serial.print("NONE     ");
+        }
+
+        Serial.print("| ");
+
+        if (salpakan->isEnabled()) {
+            Serial.print("ENABLED    ");
+        } else {
+            Serial.print("DISABLED   ");
+        }
+
+        Serial.print("| ");
+
+        if (salpakan->isOccupied()) {
+            Serial.print("OCCUPIED  ");
+        } else {
+            Serial.print("FREE      ");
+        }
+
+        Serial.println("|");
+    }
+
+    Serial.println("+----+----------+------------+-----------+");
 }
 
+// --------------------------------------------------
+// Experiment Objects
+// --------------------------------------------------
+
+Salalayan<4> sensor("Sensor");
+Salalayan<3> control("Control");
+Salalayan<2> communication("Communication");
+
+TestSapad imu;
+TestSapad gnss;
+TestSapad backupImu;
+
+TestSapad motorControl;
+TestSapad navigation;
+
+TestSapad primaryLink;
+TestSapad backupLink;
 
 // --------------------------------------------------
 // Setup
@@ -57,272 +154,300 @@ void printSalalayanInfo(
 void setup() {
 
     Serial.begin(115200);
+
     delay(1000);
 
     Serial.println();
     Serial.println("============================================================");
-    Serial.println("              UBOD TEMPLATE SMOKE TEST");
-    Serial.println("        Configurable Salalayan Capacity Validation");
+    Serial.println("             UBOD v0.1.19 EXPERIMENT");
+    Serial.println("      Heterogeneous Salalayan Composition");
     Serial.println("============================================================");
 
 
-    // ==================================================
-    // [1] Minimum Capacity
-    // ==================================================
+    // --------------------------------------------------
+    // [1] Initial Composition
+    // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[1] Salalayan<1>");
+    Serial.println("[1] Salalayan Composition");
     Serial.println("------------------------------------------------------------");
 
-    Salalayan<1> single("Single");
-
     printResult(
-        "Capacity == 1",
-        single.capacity() == 1
+        "Sensor capacity == 4",
+        sensor.capacity() == 4
     );
 
     printResult(
-        "Initially empty",
-        single.isEmpty()
+        "Control capacity == 3",
+        control.capacity() == 3
     );
 
-    printSalalayanInfo(
-        "Salalayan<1> State",
-        single
+    printResult(
+        "Communication capacity == 2",
+        communication.capacity() == 2
     );
 
 
-    // ==================================================
-    // [2] Small Capacity
-    // ==================================================
+    // --------------------------------------------------
+    // [2] Attach Sensor Sapad
+    // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[2] Salalayan<2>");
+    Serial.println("[2] Sensor Group");
     Serial.println("------------------------------------------------------------");
 
-    Salalayan<2> small("Small");
-
     printResult(
-        "Capacity == 2",
-        small.capacity() == 2
+        "Attach IMU to Sensor #1",
+        sensor.attach(1, &imu)
     );
 
     printResult(
-        "Attach IMU to #1",
-        small.attach(1, &imu)
+        "Attach GNSS to Sensor #2",
+        sensor.attach(2, &gnss)
     );
 
     printResult(
-        "Attach GNSS to #2",
-        small.attach(2, &gnss)
+        "Attach Backup IMU to Sensor #3",
+        sensor.attach(3, &backupImu)
     );
 
     printResult(
-        "Salalayan is FULL",
-        small.isFull()
+        "Enable Sensor #1",
+        sensor.enable(1)
     );
 
-    printSalalayanInfo(
-        "Salalayan<2> State",
-        small
+    printResult(
+        "Enable Sensor #2",
+        sensor.enable(2)
+    );
+
+    printSalalayanOverview(
+        "Sensor Salalayan State",
+        sensor
     );
 
 
-    // ==================================================
-    // [3] Previous Default Capacity
-    // ==================================================
+    // --------------------------------------------------
+    // [3] Attach Control Sapad
+    // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[3] Salalayan<4>");
+    Serial.println("[3] Control Group");
     Serial.println("------------------------------------------------------------");
 
-    Salalayan<4> standard("Standard");
-
     printResult(
-        "Capacity == 4",
-        standard.capacity() == 4
+        "Attach Motor Control to Control #1",
+        control.attach(1, &motorControl)
     );
 
     printResult(
-        "Attach IMU to #1",
-        standard.attach(1, &imu)
+        "Attach Navigation to Control #2",
+        control.attach(2, &navigation)
     );
 
     printResult(
-        "Attach Telemetry to #3",
-        standard.attach(3, &telemetry)
+        "Enable Control #1",
+        control.enable(1)
     );
 
-    printResult(
-        "Enable #1",
-        standard.enable(1)
-    );
-
-    printSalalayanInfo(
-        "Salalayan<4> State",
-        standard
+    printSalalayanOverview(
+        "Control Salalayan State",
+        control
     );
 
 
-    // ==================================================
-    // [4] Larger Capacity
-    // ==================================================
+    // --------------------------------------------------
+    // [4] Attach Communication Sapad
+    // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[4] Salalayan<8>");
+    Serial.println("[4] Communication Group");
     Serial.println("------------------------------------------------------------");
 
-    Salalayan<8> large("Large");
-
     printResult(
-        "Capacity == 8",
-        large.capacity() == 8
+        "Attach Primary Link to Communication #1",
+        communication.attach(1, &primaryLink)
     );
 
     printResult(
-        "Attach Diagnostics to #8",
-        large.attach(8, &diagnostics)
+        "Attach Backup Link to Communication #2",
+        communication.attach(2, &backupLink)
     );
 
     printResult(
-        "Enable #8",
-        large.enable(8)
+        "Enable Communication #1",
+        communication.enable(1)
     );
 
     printResult(
-        "Salpakan #8 exists",
-        large.get(8) != nullptr
+        "Enable Communication #2",
+        communication.enable(2)
     );
 
-    printResult(
-        "Salpakan #9 rejected",
-        large.get(9) == nullptr
-    );
-
-    printSalalayanInfo(
-        "Salalayan<8> State",
-        large
+    printSalalayanOverview(
+        "Communication Salalayan State",
+        communication
     );
 
 
-    // ==================================================
-    // [5] Local Identity
-    // ==================================================
+    // --------------------------------------------------
+    // [5] Local Salpakan Identity
+    // --------------------------------------------------
 
     Serial.println();
     Serial.println("[5] Local Salpakan Identity");
     Serial.println("------------------------------------------------------------");
 
-    Salpakan* singleSlot =
-        single.get(1);
-
-    Salpakan* smallSlot =
-        small.get(1);
-
-    Salpakan* standardSlot =
-        standard.get(1);
+    Salpakan* sensorSlot1 = sensor.get(1);
+    Salpakan* controlSlot1 = control.get(1);
+    Salpakan* communicationSlot1 = communication.get(1);
 
     printResult(
-        "Salalayan<1> has Salpakan #1",
-        singleSlot != nullptr &&
-        singleSlot->id() == 1
+        "Sensor has Salpakan #1",
+        sensorSlot1 != nullptr &&
+        sensorSlot1->id() == 1
     );
 
     printResult(
-        "Salalayan<2> has Salpakan #1",
-        smallSlot != nullptr &&
-        smallSlot->id() == 1
+        "Control has Salpakan #1",
+        controlSlot1 != nullptr &&
+        controlSlot1->id() == 1
     );
 
     printResult(
-        "Salalayan<4> has Salpakan #1",
-        standardSlot != nullptr &&
-        standardSlot->id() == 1
+        "Communication has Salpakan #1",
+        communicationSlot1 != nullptr &&
+        communicationSlot1->id() == 1
     );
 
     printResult(
-        "Local Salpakan objects are different",
-        singleSlot != smallSlot &&
-        smallSlot != standardSlot &&
-        singleSlot != standardSlot
+        "Local Salpakan #1 objects are different",
+        sensorSlot1 != controlSlot1 &&
+        sensorSlot1 != communicationSlot1 &&
+        controlSlot1 != communicationSlot1
     );
 
 
-    // ==================================================
+    // --------------------------------------------------
     // [6] Independent Accounting
-    // ==================================================
+    // --------------------------------------------------
 
     Serial.println();
     Serial.println("[6] Independent Accounting");
     Serial.println("------------------------------------------------------------");
 
     printResult(
-        "Single Used == 0",
-        single.used() == 0
+        "Sensor Used == 3",
+        sensor.used() == 3
     );
 
     printResult(
-        "Small Used == 2",
-        small.used() == 2
+        "Control Used == 2",
+        control.used() == 2
     );
 
     printResult(
-        "Standard Used == 2",
-        standard.used() == 2
+        "Communication Used == 2",
+        communication.used() == 2
     );
 
     printResult(
-        "Large Used == 1",
-        large.used() == 1
+        "Communication is FULL",
+        communication.isFull()
+    );
+
+    printResult(
+        "Sensor is not FULL",
+        !sensor.isFull()
     );
 
 
-    // ==================================================
-    // [7] Enablement Boundary
-    // ==================================================
+    // --------------------------------------------------
+    // [7] Independent Enablement
+    // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[7] Enablement Boundary");
+    Serial.println("[7] Independent Enablement");
     Serial.println("------------------------------------------------------------");
 
     printResult(
-        "Small has no enabled Salpakan",
-        small.enabled() == 0
+        "Sensor Enabled == 2",
+        sensor.enabled() == 2
     );
 
     printResult(
-        "Standard has one enabled Salpakan",
-        standard.enabled() == 1
+        "Control Enabled == 1",
+        control.enabled() == 1
     );
 
     printResult(
-        "Large has one enabled Salpakan",
-        large.enabled() == 1
+        "Communication Enabled == 2",
+        communication.enabled() == 2
     );
 
     printResult(
-        "Enablement remains local to each Salalayan",
-        standard.enabled() != large.enabled() ||
-        standard.capacity() != large.capacity()
+        "Control has disabled occupied Salpakan",
+        control.get(2)->isOccupied() &&
+        !control.get(2)->isEnabled()
+    );
+
+
+    // --------------------------------------------------
+    // [8] Cross-Group Isolation
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[8] Cross-Group Isolation");
+    Serial.println("------------------------------------------------------------");
+
+    unsigned int sensorUsedBefore = sensor.used();
+    unsigned int controlUsedBefore = control.used();
+
+    communication.disable(1);
+
+    printResult(
+        "Communication #1 disabled",
+        !communication.get(1)->isEnabled()
     );
 
     printResult(
-        "Standard enablement unaffected by Large",
-        standard.enabled() == 1 &&
-        large.enabled() == 1
+        "Sensor accounting unaffected",
+        sensor.used() == sensorUsedBefore
+    );
+
+    printResult(
+        "Control accounting unaffected",
+        control.used() == controlUsedBefore
+    );
+
+    printResult(
+        "Sensor enablement unaffected",
+        sensor.enabled() == 2
     );
 
 
-    // ==================================================
-    // Final
-    // ==================================================
+    // --------------------------------------------------
+    // [9] Architectural Summary
+    // --------------------------------------------------
+
+    Serial.println();
+    Serial.println("[9] Architectural Boundary");
+    Serial.println("------------------------------------------------------------");
+
+    Serial.println("Multiple Salalayan instances form structural groups.");
+    Serial.println("Each Salalayan owns its local Salpakan namespace.");
+    Serial.println("Capacity is independently defined per Salalayan.");
+    Serial.println("Occupancy and enablement remain locally independent.");
+    Serial.println("No system-wide registry or Silid class is introduced.");
+
+
+    // --------------------------------------------------
 
     Serial.println();
     Serial.println("============================================================");
-    Serial.println("              SMOKE TEST COMPLETE");
+    Serial.println("               EXPERIMENT COMPLETE");
     Serial.println("============================================================");
 }
-
 
 void loop() {
 }
