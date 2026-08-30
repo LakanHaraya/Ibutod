@@ -1,4 +1,4 @@
-# <p style="font-family: 'Noto Sans Tagalog', 'Makisig', 'Takloban', sans-serif; font-size: 24px;">ᜁᜊᜓᜆᜓᜇ᜔</p> Ibútod
+# <h1> <img src="assets/ibutod-whiteFont-gridBg.svg" height="20" alt="Ibutod Baybayin"> Ibútod </h1>
 
 **/i•bú•tod/**
 *png | [ i+butod ]*
