@@ -1,10 +1,8 @@
-# DEVLOG
+# Ibutod DEVLOG
 
 Talaan ng mga eksperimento, pagsusuri, obserbasyon, at architectural decisions sa pagpapaunlad ng Ubod.
 
 ---
-
-## [0.1.19] — 2026-08-30 — Nakukumpigurang Kapasidad ng Salalayan (*Configurable Salalayan Capacity*)
 
 ## [0.1.18] — Introspeksiyong Pang-estruktura ng Salalayan (*Salalayan Structural Instrospection*)
 ### Sinubukan

@@ -2,7 +2,7 @@
 Lahat ng kapansin-pansing pagbabago sa proyektong ito ay idodokumento sa file na ito.
 
 Ang format ay batay sa [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-Sa kasalukuyang eksperimental na yugto ng **Ubod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersiyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Sa kasalukuyang eksperimental na yugto ng **Ibutod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersiyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.19] — 2026-08-30 — Nakukumpigurang Kapasidad ng Salalayan (*Configurable Salalayan Capacity*)
 ### Idinagdag
@@ -13,7 +13,7 @@ Sa kasalukuyang eksperimental na yugto ng **Ubod**, ang mga bersiyon sa seryeng 
 ### Binago
 - Binago ang dating nakapirmeng `Salalayan::Capacity` tungo sa configurable na template parameter.
 - Binago ang deklarasyon ng `Salalayan` upang suportahan ang magkakaibang structural capacities bawat instance type.
-- Inilipat ang implementation ng `Salalayan` mula `Ubod.cpp` patungo sa template implementation file.
+- Inilipat ang implementation ng `Salalayan` mula `Ibutod.cpp` patungo sa template implementation file.
 
 ## [0.1.18] — Introspeksiyong Pang-estruktura ng Salalayan (*Salalayan Structural Instrospection*)
 ### Idinagdag
