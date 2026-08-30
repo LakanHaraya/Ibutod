@@ -17,19 +17,19 @@
 
 > ###### **/i•bú•tod/** png | [ i+butod ] : **pinakaloob, gitna, kalaliman, o pinakasentro**
 
---- 
+---
 
-Ang **Ibútod** ay isang magaan at static-first na pundasyong software para sa pagbuo at pamamahala ng mga modular na bahagi ng resource-constrained embedded systems ng **LNDH ecosystem**.
+Ang **Ibútod** ay isang magaan, static-first, at microcontroller-oriented na software foundation para sa pagbuo ng modular na bahagi ng resource-constrained embedded systems. Ito ay binubuo bilang bahagi ng **LNDH ecosystem**, ngunit ang mismong mga ideya nito ay sinusubukang manatiling sapat na payak upang mapakinabangan din sa iba pang maliliit at limitadong sistema. 
 
-Layunin nitong magbigay ng simple, bounded, at mahuhulaang structural foundation para sa mga modular component nang hindi umaasa sa dynamic memory allocation.
+Nagsimula ang Ibutod mula sa isang payak na tanong: **paano ba natin maipapangkat at mapamamahalaan ang mga modular na bahagi ng isang embedded system nang hindi agad dumedepende sa dynamic memory, malalaking framework, o komplikadong runtime machinery?** Hindi nito sinusubukang lutasin ang lahat. Sa halip, nakatuon ang Ibutod sa pagbibigay ng isang maliit, bounded, at mahuhulaang structural foundation kung saan maaaring magkaroon ng malinaw na lugar ang bawat component sa loob ng isang system.
 
-> **Static. Bounded. Modular. MCU-oriented.**
+> **Static. Bounded. Modular. Resource-constrained.**
 
 ---
 
-## Pangunahing Konsepto
+## Ang Modelo
 
-Ang kasalukuyang modelo ng Ibutod ay binubuo ng:
+Sa kasalukuyang paghubog nito, inilalarawan ang Ibutod sa pamamagitan ng apat na konsepto:
 
 ```text
 Silid
@@ -38,29 +38,34 @@ Silid
         └── Sapad
 ```
 
-* **Sapad** — bagay na maaaring ikabit sa isang Salpakan.
-* **Salpakan** — bounded na puwesto para sa isang Sapad.
-* **Salalayan** — grupo ng mga Salpakan na may sariling kapasidad at lokal na state.
+Ang **Sapad** ang bagay o component na maaaring ikabit. Ang **Salpakan** naman ang puwesto kung saan ito maaaring ilagay. Ang ilang Salpakan ay bumubuo ng isang **Salalayan**—isang bounded na structural container na may sariling kapasidad at lokal na estado. Samantala, ang **Silid** ay nagsisilbing mas mataas na konseptuwal na hangganan ng modelo. Sa kasalukuyang bersiyon ng Ibutod, hindi pa ito isang aktuwal na class. Bahagi pa lamang ito ng mas malawak na pag-iisip tungkol sa kung paano maaaring buuin at pag-ugnayin ang mga modular na bahagi ng isang sistema.
 
-Ang **Silid** ay kasalukuyang konseptuwal na bahagi lamang ng modelo at hindi pa isang Ibutod class.
+Sa pinakasimpleng anyo:
+
+* **Sapad** — isang bagay na maaaring ikabit;
+* **Salpakan** — isang bounded na puwesto para sa isang Sapad;
+* **Salalayan** — isang pangkat ng mga Salpakan na may sariling kapasidad at estado;
+* **Silid** — isang mas mataas na konseptuwal na espasyo para sa mga Salalayan.
 
 ---
 
-## Mga Pangunahing Katangian
+## Ano ang Sinusubukang Gawin?
 
-Sa kasalukuyang development phase, sinusuportahan ng Ibutod ang:
+Ang Ibutod ay hindi naglalayong maging isang kompletong embedded framework. Hindi rin ito isang scheduler, RTOS, task manager, o execution engine. Sadyang may hangganan ang saklaw nito. Ang pangunahing interes ng Ibutod ay ang **estruktura**: kung paano magkaroon ng bounded na mga puwesto, paano ikabit o tanggalin ang mga component, paano malaman ang kanilang availability at enablement state, at paano magkaroon ng ilang independiyenteng structural container sa loob ng iisang embedded application.
+
+Sa kasalukuyang development phase, kabilang sa mga sinusubukang patatagin ang:
 
 * static storage;
 * compile-time configurable capacity;
-* local Salpakan identity;
+* lokal na identity ng Salpakan;
 * optional naming;
 * Sapad attachment at detachment;
-* `FREE` / `OCCUPIED` availability;
-* `DISABLED` / `ENABLED` enablement;
+* `FREE` at `OCCUPIED` availability;
+* `DISABLED` at `ENABLED` enablement;
 * structural accounting at introspection; at
 * maraming independiyenteng `Salalayan`.
 
-Halimbawa:
+Halimbawa, maaaring hatiin ang isang application sa magkakahiwalay na structural domains:
 
 ```cpp
 Salalayan<4> sensor("Sensor");
@@ -68,34 +73,53 @@ Salalayan<3> control("Control");
 Salalayan<2> communication("Communication");
 ```
 
----
-
-## Disenyo
-
-Ang Ibutod ay idinisenyo para sa mga embedded system kung saan mahalaga ang:
-
-* predictable memory usage;
-* maliit at malinaw na abstraction;
-* bounded resources;
-* modular structure; at
-* limitadong runtime overhead.
-
-Ang Ibutod ay kasalukuyang **hindi** isang scheduler, task manager, o execution framework. Ang execution behavior ng mga nakakabit na component ay sadyang nasa labas muna ng kasalukuyang core model.
+Ang bawat Salalayan ay may sariling hangganan. Hindi kailangang malaman ng isang bahagi ang lahat ng nasa buong sistema upang magkaroon ng sariling maliit at malinaw na structural context.
 
 ---
 
-## Development Status
+## Bakit Static at Bounded?
 
-Ang Ibutod ay nasa:
+Pangunahing iniisip ng Ibutod ang para sa mga microcontroller at iba pang resource-constrained na kapaligiran kung saan ang pagiging simple at mahuhulaan ay kadalasang mas mahalaga kaysa sa walang hanggang flexibility. Sa halip na palaging umasa sa dynamic allocation, nilalayon ng Ibutod na malaman ang structural capacity nang maaga hangga't maaari.
 
-**`v0.1.x — Experimental Development`**
+```cpp
+Salalayan<4> sensor;
+```
 
-Maaaring magkaroon ng breaking changes, API redesign, at architectural changes sa pagitan ng mga bersiyon habang patuloy na sinusuri ang disenyo.
-
-Ang mga eksperimento at development findings ay nakatala sa `DEVLOG/`, habang ang mga pangunahing pagbabago ay nakatala sa `CHANGELOG.md`.
+Sa ganitong modelo, malinaw na may apat na Salpakan lamang ang Salalayan. Ang limitasyon ay hindi isang aksidenteng runtime condition, kundi bahagi ito mismo ng disenyo. Hindi ito nangangahulugang ang static approach ang laging pinakamahusay na sagot. Ngunit para sa uri ng mga sistemang pangunahing pinag-eeksperimentuhan ng Ibutod, ang bounded resources ay maaaring magbigay ng mas malinaw na memory expectations, mas simpleng lifecycle, at mas madaling pangangatwiran tungkol sa estado ng system.
 
 ---
 
-## License
+## Mga Hangganan
 
-*Tinutukoy pa.*
+Mahalaga rin kung ano ang **hindi** Ibutod. Sa kasalukuyan, hindi nito sinusubukang pamahalaan kung kailan tatakbo ang isang component, gaano kadalas itong tatawagin, o paano ito makikipag-ugnayan sa isang scheduler. Ang execution behavior ay sadyang hindi pa bahagi ng core model. Ang paghihiwalay na ito ay sinasadya. Bago magdagdag ng concurrency, scheduling, events, o iba pang runtime behavior, sinusubukang patatagin muna ng Ibutod ang mas payak na tanong:
+
+> **Paano ba dapat magkaroon ng lugar, hangganan, at estruktura ang mga modular na bahagi ng isang maliit na system?**
+
+Maaaring lumawak ang mga eksperimento sa hinaharap, ngunit hindi nangangahulugang lahat ng susunod na ideya ay kailangang mapasama sa ibutod.
+
+---
+
+## Eksperimental pa rin
+
+Ang Ibutod ay kasalukuyang nasa **`v0.1.x — Experimental Development`**. Ito ay aktibong hinuhubog at sinusuri. Maaaring magbago ang mga pangalan, API, abstraction, at maging ang ilang pangunahing architectural assumptions habang nagpapatuloy ang mga eksperimento. Hindi pa ito nangangako ng stable API. Ang mga development experiments at mga natuklasan habang binubuo ang proyekto ay maaaring matagpuan sa [`DEVLOG/`](DEVLOG/), samantalang ang mga pangunahing pagbabago sa bawat bersiyon ay nakatala sa [`CHANGELOG.md`](CHANGELOG.md).
+
+Sa ngayon, mas mahalaga ang tamang direksiyon kaysa sa mabilis na pagdaragdag ng maraming feature.
+
+---
+
+## Bukás na Proyekto
+
+Ang Ibutod ay isang open-source experimental project. Maaaring gamitin, pag-aralan, baguhin, at paunlarin ang code ayon sa mga tuntunin ng lisensiya nito.
+
+Bagaman nagsimula ito bilang bahagi ng mga eksperimento para sa **LNDH**, bukas ang proyekto sa mga ideya, pagsusuri, at isyu. Hindi nangangahulugan na ang pagiging bukás nito ay awtomatikong mawawala ang direksiyon ng proyekto, kundi ang mga pagbabago sa pangunahing codebase ay dadaan pa rin sa pagsusuri upang mapanatili ang pagiging maliit, malinaw, at may hangganan ng ibutod.
+
+Kung may ideya kang maaaring magpabuti sa disenyo, malugod na pag-aralan, pag-usapan, o subukang i-prototype ito.
+
+---
+
+## Lisensiya
+
+Ang Ibutod ay inilalathala sa ilalim ng **GNU General Public License v3.0 (GPLv3)**.
+
+Tingnan ang [`LICENSE`](LICENSE) para sa buong tuntunin ng lisensiya.
+
