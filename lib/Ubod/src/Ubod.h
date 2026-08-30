@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstring>
+
 // Minimal type boundary for objects attachable to an Salpakan
 // Execution behavior is intentionally not defined yet.
 class Sapad {
@@ -53,6 +55,7 @@ class Salpakan
         unsigned long uptime() const;
 
     private:
+        template <unsigned int>
         friend class Salalayan;
         Salpakan();
         unsigned int _id;
@@ -66,10 +69,13 @@ class Salpakan
         bool isNameValid(const char* name) const;
 };
 
+template <unsigned int Capacity>
 class Salalayan {
     public: 
-        static constexpr unsigned int Capacity = 4;
-        static_assert(Capacity >= 2 && Capacity <= 32, "Ang Kapasidad ng Salalayan ay dapat nasa pagitan ng 2 at 32.");
+        static_assert(
+            Capacity >= 1 && Capacity <= 32,
+            "Ang Kapasidad ng Salalayan ay dapat nasa pagitan ng 1 at 32."
+        );
         explicit Salalayan(const char* name = nullptr);
         bool setName(const char* name);
         const char* name() const;
@@ -96,3 +102,5 @@ class Salalayan {
         Salpakan _salpakan[Capacity];
         bool isNameValid(const char* name) const;
 };
+
+#include "Salalayan.tpp"
