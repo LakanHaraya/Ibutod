@@ -1,12 +1,22 @@
-# <h1> <img src="assets/ibutod-whiteFont-gridBg.svg" height="20" alt="Ibutod Baybayin"> Ibútod </h1>
+<p align="center">
+    <img src="assets/ibutod-whiteFont-gridBg.svg"
+        height="42"
+        alt="Ibutod sa Baybayin"
+        style="vertical-align: middle;">
+</p>
 
-**/i•bú•tod/**
-*png | [ i+butod ]*
-: **pinakaloob, gitna, kalaliman, o pinakasentro**
+<p align="center">
+    <strong>Ang Kaibuturang Lohika</strong>
+</p>
+
+![Status](https://img.shields.io/badge/Status-Experimental-orange)
+![Framework](https://img.shields.io/badge/Framework-Arduino-00979D)
+
+> ###### **/i•bú•tod/** png | [ i+butod ] : **pinakaloob, gitna, kalaliman, o pinakasentro**
 
 --- 
 
-Ang **Ibutod** ay isang magaan at static-first na pundasyong software para sa pagbuo at pamamahala ng mga modular na bahagi ng resource-constrained embedded systems ng **LNDH ecosystem**.
+Ang **Ibútod** ay isang magaan at static-first na pundasyong software para sa pagbuo at pamamahala ng mga modular na bahagi ng resource-constrained embedded systems ng **LNDH ecosystem**.
 
 Layunin nitong magbigay ng simple, bounded, at mahuhulaang structural foundation para sa mga modular component nang hindi umaasa sa dynamic memory allocation.
 
@@ -29,7 +39,7 @@ Silid
 * **Salpakan** — bounded na puwesto para sa isang Sapad.
 * **Salalayan** — grupo ng mga Salpakan na may sariling kapasidad at lokal na state.
 
-Ang **Silid** ay kasalukuyang konseptwal na bahagi lamang ng modelo at hindi pa isang Ibutod class.
+Ang **Silid** ay kasalukuyang konseptuwal na bahagi lamang ng modelo at hindi pa isang Ibutod class.
 
 ---
 
@@ -80,18 +90,6 @@ Ang Ibutod ay nasa:
 Maaaring magkaroon ng breaking changes, API redesign, at architectural changes sa pagitan ng mga bersiyon habang patuloy na sinusuri ang disenyo.
 
 Ang mga eksperimento at development findings ay nakatala sa `DEVLOG/`, habang ang mga pangunahing pagbabago ay nakatala sa `CHANGELOG.md`.
-
----
-
-## Pangalan
-
-Ang dating pangalan ng library ay **Ubod**.
-
-**Ibutod** na ngayon ang canonical name ng proyekto.
-Pinili ang pangalan batay sa kahulugang:
-> **pinakaloob, gitna, kalaliman, o pinakasentro**
-
-na malapit sa konsepto ng *core* na pinagbabatayan ng library.
 
 ---
 
