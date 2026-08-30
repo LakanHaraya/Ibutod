@@ -1,4 +1,4 @@
-# <span style="font-family: 'Noto Sans Tagalog', sans-serif;">ᜁᜊᜓᜆᜓᜇ᜔</span> Ibútod
+# <p style="font-family: 'Noto Sans Tagalog', 'Makisig', 'Takloban', sans-serif; font-size: 24px;">ᜁᜊᜓᜆᜓᜇ᜔</p> Ibútod
 
 **/i•bú•tod/**
 *png | [ i+butod ]*
