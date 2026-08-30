@@ -9,8 +9,11 @@
     <strong>Ang Kaibuturang Lohika</strong>
 </p>
 
-![Status](https://img.shields.io/badge/Status-Experimental-orange)
-![Framework](https://img.shields.io/badge/Framework-Arduino-00979D)
+[![Latest Release](https://img.shields.io/github/v/release/LakanHaraya/Ibutod?display_name=tag&sort=semver)](https://github.com/LakanHaraya/Ibutod/releases)
+[![License](https://img.shields.io/github/license/LakanHaraya/Ibutod)](https://github.com/LakanHaraya/Ibutod/blob/uswag/LICENSE)
+[![Arduino](https://img.shields.io/badge/Arduino-compatible-00979D)](https://www.arduino.cc/)
+[![PlatformIO](https://img.shields.io/badge/PlatformIO-compatible-orange)](https://platformio.org/)
+[![Status](https://img.shields.io/badge/status-experimental-yellow)](https://github.com/LakanHaraya/Ibutod)
 
 > ###### **/i•bú•tod/** png | [ i+butod ] : **pinakaloob, gitna, kalaliman, o pinakasentro**
 
