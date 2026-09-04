@@ -9,7 +9,7 @@
     <strong>Ang Kaibuturang Lohika</strong>
 </p>
 
-[![Latest Release](https://img.shields.io/github/v/release/LakanHaraya/Ibutod?display_name=tag&sort=semver)](https://github.com/LakanHaraya/Ibutod/releases)
+<!-- [![Latest Release](https://img.shields.io/github/v/release/LakanHaraya/Ibutod?display_name=tag&sort=semver)](https://github.com/LakanHaraya/Ibutod/releases) -->
 [![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 [![Arduino](https://img.shields.io/badge/Arduino-compatible-00979D)](https://www.arduino.cc/)
 [![PlatformIO](https://img.shields.io/badge/PlatformIO-compatible-orange)](https://platformio.org/)
