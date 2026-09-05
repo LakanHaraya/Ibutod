@@ -129,7 +129,7 @@ template <unsigned int Capacity>
 unsigned int Salalayan<Capacity>::capacity() const { return Capacity; }
 
 template <unsigned int Capacity>
-unsigned int Salalayan<Capacity>::used() const {
+unsigned int Salalayan<Capacity>::countOccupied() const {
     unsigned int count = 0;
     for (unsigned int i = 0; i < Capacity; ++i) {
         if (_salpakan[i].isOccupied()) { ++count; }
@@ -138,10 +138,10 @@ unsigned int Salalayan<Capacity>::used() const {
 }
 
 template <unsigned int Capacity>
-unsigned int Salalayan<Capacity>::free() const { return Capacity - used(); }
+unsigned int Salalayan<Capacity>::countFree() const { return Capacity - countOccupied(); }
 
 template <unsigned int Capacity>
-unsigned int Salalayan<Capacity>::enabled() const {
+unsigned int Salalayan<Capacity>::countEnabled() const {
     unsigned int count = 0;
     for (unsigned int i = 0; i < Capacity; ++i) {
         if (_salpakan[i].isEnabled()) { ++count; }
@@ -150,10 +150,10 @@ unsigned int Salalayan<Capacity>::enabled() const {
 }
 
 template <unsigned int Capacity>
-unsigned int Salalayan<Capacity>::disabled() const { return Capacity - enabled(); }
+unsigned int Salalayan<Capacity>::countDisabled() const { return Capacity - countEnabled(); }
 
 template <unsigned int Capacity>
-bool Salalayan<Capacity>::isEmpty() const { return used() == 0; }
+bool Salalayan<Capacity>::isEmpty() const { return countOccupied() == 0; }
 
 template <unsigned int Capacity>
-bool Salalayan<Capacity>::isFull() const { return used() == Capacity; }
+bool Salalayan<Capacity>::isFull() const { return countOccupied() == Capacity; }

@@ -1,447 +1,424 @@
 #include <Arduino.h>
 #include "Ibutod.h"
 
-// --------------------------------------------------
-// Test Sapad
-// --------------------------------------------------
+// ============================================================
+// Helper Functions
+// ============================================================
 
-class TestSapad : public Sapad {
-};
+void printDivider() {
+    Serial.println("------------------------------------------------------------");
+}
 
-// --------------------------------------------------
-// Helpers
-// --------------------------------------------------
-
-void printResult(const char* label, bool passed) {
+void printResult(const char* label, bool result) {
     Serial.print(label);
     Serial.print(": ");
-    Serial.println(passed ? "PASS" : "FAIL");
+    Serial.println(result ? "PASS" : "FAIL");
 }
 
-const char* enablementName(const Salpakan* salpakan) {
-    if (salpakan == nullptr) {
-        return "N/A";
-    }
-
-    return salpakan->isEnabled()
-        ? "ENABLED"
-        : "DISABLED";
-}
-
-const char* availabilityName(const Salpakan* salpakan) {
-    if (salpakan == nullptr) {
-        return "N/A";
-    }
-
-    return salpakan->isOccupied()
-        ? "OCCUPIED"
-        : "FREE";
-}
-
-// --------------------------------------------------
-// Salalayan Overview
-// --------------------------------------------------
-
-template <unsigned int Capacity>
-void printSalalayanOverview(
-    const char* label,
-    const Salalayan<Capacity>& salalayan
+void printSalalayanState(
+    const char* title,
+    const Salalayan<4>& salalayan
 ) {
     Serial.println();
-    Serial.println(label);
-    Serial.println("------------------------------------------------------------");
-
-    Serial.print("Name: ");
-    Serial.println(
-        salalayan.name()[0] != '\0'
-            ? salalayan.name()
-            : "(unnamed)"
-    );
+    Serial.println(title);
+    printDivider();
 
     Serial.print("Capacity: ");
     Serial.println(salalayan.capacity());
 
-    Serial.print("Used: ");
-    Serial.println(salalayan.used());
+    Serial.print("Occupied: ");
+    Serial.println(salalayan.countOccupied());
 
     Serial.print("Free: ");
-    Serial.println(salalayan.free());
+    Serial.println(salalayan.countFree());
 
     Serial.print("Enabled: ");
-    Serial.println(salalayan.enabled());
+    Serial.println(salalayan.countEnabled());
 
     Serial.print("Disabled: ");
-    Serial.println(salalayan.disabled());
+    Serial.println(salalayan.countDisabled());
 
     Serial.print("Empty: ");
     Serial.println(salalayan.isEmpty() ? "YES" : "NO");
 
     Serial.print("Full: ");
     Serial.println(salalayan.isFull() ? "YES" : "NO");
-
-    Serial.println();
-
-    Serial.println("+----+----------+------------+-----------+");
-    Serial.println("| ID | SAPAD    | ENABLEMENT | AVAIL     |");
-    Serial.println("+----+----------+------------+-----------+");
-
-    for (unsigned int id = 1; id <= Capacity; ++id) {
-
-        const Salpakan* salpakan = salalayan.get(id);
-
-        Serial.print("| ");
-
-        if (id < 10) {
-            Serial.print(id);
-            Serial.print("  ");
-        } else {
-            Serial.print(id);
-            Serial.print(" ");
-        }
-
-        Serial.print("| ");
-
-        if (salpakan->hasSapad()) {
-            Serial.print("ATTACHED ");
-        } else {
-            Serial.print("NONE     ");
-        }
-
-        Serial.print("| ");
-
-        if (salpakan->isEnabled()) {
-            Serial.print("ENABLED    ");
-        } else {
-            Serial.print("DISABLED   ");
-        }
-
-        Serial.print("| ");
-
-        if (salpakan->isOccupied()) {
-            Serial.print("OCCUPIED  ");
-        } else {
-            Serial.print("FREE      ");
-        }
-
-        Serial.println("|");
-    }
-
-    Serial.println("+----+----------+------------+-----------+");
 }
 
-// --------------------------------------------------
+
+// ============================================================
 // Experiment Objects
-// --------------------------------------------------
+// ============================================================
 
-Salalayan<4> sensor("Sensor");
-Salalayan<3> control("Control");
-Salalayan<2> communication("Communication");
+class IMU : public Sapad {
+};
 
-TestSapad imu;
-TestSapad gnss;
-TestSapad backupImu;
+class GNSS : public Sapad {
+};
 
-TestSapad motorControl;
-TestSapad navigation;
+class Telemetry : public Sapad {
+};
 
-TestSapad primaryLink;
-TestSapad backupLink;
+class Diagnostics : public Sapad {
+};
 
-// --------------------------------------------------
-// Setup
-// --------------------------------------------------
+
+// ============================================================
+// Experiment
+// ============================================================
 
 void setup() {
 
     Serial.begin(115200);
-
-    delay(1000);
+    delay(1500);
 
     Serial.println();
     Serial.println("============================================================");
-    Serial.println("             UBOD v0.1.19 EXPERIMENT");
-    Serial.println("      Heterogeneous Salalayan Composition");
+    Serial.println("             IBUTOD v0.1.20 EXPERIMENT");
+    Serial.println("          Salalayan Counting API Refinement");
     Serial.println("============================================================");
+    Serial.println();
+
+    Salalayan<4> system("System");
+
+    IMU imu;
+    GNSS gnss;
+    Telemetry telemetry;
+    Diagnostics diagnostics;
 
 
-    // --------------------------------------------------
-    // [1] Initial Composition
-    // --------------------------------------------------
+    // ========================================================
+    // [1] Initial State
+    // ========================================================
+
+    Serial.println("[1] Initial Counting State");
+    printDivider();
+
+    printSalalayanState(
+        "Initial Salalayan State",
+        system
+    );
+
+    printResult(
+        "Capacity == 4",
+        system.capacity() == 4
+    );
+
+    printResult(
+        "Occupied == 0",
+        system.countOccupied() == 0
+    );
+
+    printResult(
+        "Free == 4",
+        system.countFree() == 4
+    );
+
+    printResult(
+        "Enabled == 0",
+        system.countEnabled() == 0
+    );
+
+    printResult(
+        "Disabled == 4",
+        system.countDisabled() == 4
+    );
+
+
+    // ========================================================
+    // [2] Attach Sapad
+    // ========================================================
 
     Serial.println();
-    Serial.println("[1] Salalayan Composition");
-    Serial.println("------------------------------------------------------------");
+    Serial.println("[2] Occupancy Counting");
+    printDivider();
 
     printResult(
-        "Sensor capacity == 4",
-        sensor.capacity() == 4
+        "Attach IMU to #1",
+        system.attach(1, &imu)
     );
 
     printResult(
-        "Control capacity == 3",
-        control.capacity() == 3
+        "Attach GNSS to #2",
+        system.attach(2, &gnss)
     );
 
     printResult(
-        "Communication capacity == 2",
-        communication.capacity() == 2
+        "Attach Telemetry to #3",
+        system.attach(3, &telemetry)
+    );
+
+    printSalalayanState(
+        "After Three Attachments",
+        system
+    );
+
+    printResult(
+        "Occupied == 3",
+        system.countOccupied() == 3
+    );
+
+    printResult(
+        "Free == 1",
+        system.countFree() == 1
     );
 
 
-    // --------------------------------------------------
-    // [2] Attach Sensor Sapad
-    // --------------------------------------------------
+    // ========================================================
+    // [3] Occupancy Invariant
+    // ========================================================
 
     Serial.println();
-    Serial.println("[2] Sensor Group");
-    Serial.println("------------------------------------------------------------");
+    Serial.println("[3] Occupancy Accounting Invariant");
+    printDivider();
 
     printResult(
-        "Attach IMU to Sensor #1",
-        sensor.attach(1, &imu)
-    );
-
-    printResult(
-        "Attach GNSS to Sensor #2",
-        sensor.attach(2, &gnss)
+        "Occupied + Free == Capacity",
+        system.countOccupied() +
+        system.countFree() ==
+        system.capacity()
     );
 
     printResult(
-        "Attach Backup IMU to Sensor #3",
-        sensor.attach(3, &backupImu)
+        "Salalayan is not EMPTY",
+        !system.isEmpty()
     );
 
     printResult(
-        "Enable Sensor #1",
-        sensor.enable(1)
-    );
-
-    printResult(
-        "Enable Sensor #2",
-        sensor.enable(2)
-    );
-
-    printSalalayanOverview(
-        "Sensor Salalayan State",
-        sensor
+        "Salalayan is not FULL",
+        !system.isFull()
     );
 
 
-    // --------------------------------------------------
-    // [3] Attach Control Sapad
-    // --------------------------------------------------
+    // ========================================================
+    // [4] Enable Salpakan
+    // ========================================================
 
     Serial.println();
-    Serial.println("[3] Control Group");
-    Serial.println("------------------------------------------------------------");
+    Serial.println("[4] Enablement Counting");
+    printDivider();
 
     printResult(
-        "Attach Motor Control to Control #1",
-        control.attach(1, &motorControl)
-    );
-
-    printResult(
-        "Attach Navigation to Control #2",
-        control.attach(2, &navigation)
+        "Enable Salpakan #1",
+        system.enable(1)
     );
 
     printResult(
-        "Enable Control #1",
-        control.enable(1)
+        "Enable Salpakan #3",
+        system.enable(3)
     );
 
-    printSalalayanOverview(
-        "Control Salalayan State",
-        control
+    printSalalayanState(
+        "After Enabling #1 and #3",
+        system
+    );
+
+    printResult(
+        "Enabled == 2",
+        system.countEnabled() == 2
+    );
+
+    printResult(
+        "Disabled == 2",
+        system.countDisabled() == 2
     );
 
 
-    // --------------------------------------------------
-    // [4] Attach Communication Sapad
-    // --------------------------------------------------
+    // ========================================================
+    // [5] Enablement Invariant
+    // ========================================================
 
     Serial.println();
-    Serial.println("[4] Communication Group");
-    Serial.println("------------------------------------------------------------");
+    Serial.println("[5] Enablement Accounting Invariant");
+    printDivider();
 
     printResult(
-        "Attach Primary Link to Communication #1",
-        communication.attach(1, &primaryLink)
-    );
-
-    printResult(
-        "Attach Backup Link to Communication #2",
-        communication.attach(2, &backupLink)
+        "Enabled + Disabled == Capacity",
+        system.countEnabled() +
+        system.countDisabled() ==
+        system.capacity()
     );
 
     printResult(
-        "Enable Communication #1",
-        communication.enable(1)
-    );
-
-    printResult(
-        "Enable Communication #2",
-        communication.enable(2)
-    );
-
-    printSalalayanOverview(
-        "Communication Salalayan State",
-        communication
+        "Enabled <= Occupied",
+        system.countEnabled() <=
+        system.countOccupied()
     );
 
 
-    // --------------------------------------------------
-    // [5] Local Salpakan Identity
-    // --------------------------------------------------
+    // ========================================================
+    // [6] Occupancy vs Enablement
+    // ========================================================
 
     Serial.println();
-    Serial.println("[5] Local Salpakan Identity");
-    Serial.println("------------------------------------------------------------");
-
-    Salpakan* sensorSlot1 = sensor.get(1);
-    Salpakan* controlSlot1 = control.get(1);
-    Salpakan* communicationSlot1 = communication.get(1);
+    Serial.println("[6] Independent Counting Dimensions");
+    printDivider();
 
     printResult(
-        "Sensor has Salpakan #1",
-        sensorSlot1 != nullptr &&
-        sensorSlot1->id() == 1
+        "Occupied != Enabled",
+        system.countOccupied() !=
+        system.countEnabled()
     );
 
     printResult(
-        "Control has Salpakan #1",
-        controlSlot1 != nullptr &&
-        controlSlot1->id() == 1
+        "Occupied Salpakan may remain DISABLED",
+        system.countOccupied() > system.countEnabled()
     );
-
-    printResult(
-        "Communication has Salpakan #1",
-        communicationSlot1 != nullptr &&
-        communicationSlot1->id() == 1
-    );
-
-    printResult(
-        "Local Salpakan #1 objects are different",
-        sensorSlot1 != controlSlot1 &&
-        sensorSlot1 != communicationSlot1 &&
-        controlSlot1 != communicationSlot1
-    );
-
-
-    // --------------------------------------------------
-    // [6] Independent Accounting
-    // --------------------------------------------------
 
     Serial.println();
-    Serial.println("[6] Independent Accounting");
-    Serial.println("------------------------------------------------------------");
-
-    printResult(
-        "Sensor Used == 3",
-        sensor.used() == 3
-    );
-
-    printResult(
-        "Control Used == 2",
-        control.used() == 2
-    );
-
-    printResult(
-        "Communication Used == 2",
-        communication.used() == 2
-    );
-
-    printResult(
-        "Communication is FULL",
-        communication.isFull()
-    );
-
-    printResult(
-        "Sensor is not FULL",
-        !sensor.isFull()
+    Serial.println(
+        "Occupancy and enablement remain separate dimensions."
     );
 
 
-    // --------------------------------------------------
-    // [7] Independent Enablement
-    // --------------------------------------------------
+    // ========================================================
+    // [7] Fill Remaining Salpakan
+    // ========================================================
 
     Serial.println();
-    Serial.println("[7] Independent Enablement");
-    Serial.println("------------------------------------------------------------");
+    Serial.println("[7] Full Capacity Counting");
+    printDivider();
 
     printResult(
-        "Sensor Enabled == 2",
-        sensor.enabled() == 2
+        "Attach Diagnostics to #4",
+        system.attach(4, &diagnostics)
+    );
+
+    printSalalayanState(
+        "Full Salalayan State",
+        system
     );
 
     printResult(
-        "Control Enabled == 1",
-        control.enabled() == 1
+        "Occupied == Capacity",
+        system.countOccupied() ==
+        system.capacity()
     );
 
     printResult(
-        "Communication Enabled == 2",
-        communication.enabled() == 2
+        "Free == 0",
+        system.countFree() == 0
     );
 
     printResult(
-        "Control has disabled occupied Salpakan",
-        control.get(2)->isOccupied() &&
-        !control.get(2)->isEnabled()
+        "Salalayan is FULL",
+        system.isFull()
     );
 
 
-    // --------------------------------------------------
-    // [8] Cross-Group Isolation
-    // --------------------------------------------------
+    // ========================================================
+    // [8] Disable and Detach
+    // ========================================================
 
     Serial.println();
-    Serial.println("[8] Cross-Group Isolation");
-    Serial.println("------------------------------------------------------------");
-
-    unsigned int sensorUsedBefore = sensor.used();
-    unsigned int controlUsedBefore = control.used();
-
-    communication.disable(1);
+    Serial.println("[8] Counting After State Changes");
+    printDivider();
 
     printResult(
-        "Communication #1 disabled",
-        !communication.get(1)->isEnabled()
+        "Disable Salpakan #1",
+        system.disable(1)
     );
 
     printResult(
-        "Sensor accounting unaffected",
-        sensor.used() == sensorUsedBefore
+        "Detach Sapad from #1",
+        system.detach(1)
+    );
+
+    printSalalayanState(
+        "After Disable and Detach",
+        system
     );
 
     printResult(
-        "Control accounting unaffected",
-        control.used() == controlUsedBefore
+        "Occupied == 3",
+        system.countOccupied() == 3
     );
 
     printResult(
-        "Sensor enablement unaffected",
-        sensor.enabled() == 2
+        "Free == 1",
+        system.countFree() == 1
+    );
+
+    printResult(
+        "Enabled == 1",
+        system.countEnabled() == 1
+    );
+
+    printResult(
+        "Disabled == 3",
+        system.countDisabled() == 3
     );
 
 
-    // --------------------------------------------------
-    // [9] Architectural Summary
-    // --------------------------------------------------
+    // ========================================================
+    // [9] Final Invariants
+    // ========================================================
 
     Serial.println();
-    Serial.println("[9] Architectural Boundary");
-    Serial.println("------------------------------------------------------------");
+    Serial.println("[9] Final Accounting Invariants");
+    printDivider();
 
-    Serial.println("Multiple Salalayan instances form structural groups.");
-    Serial.println("Each Salalayan owns its local Salpakan namespace.");
-    Serial.println("Capacity is independently defined per Salalayan.");
-    Serial.println("Occupancy and enablement remain locally independent.");
-    Serial.println("No system-wide registry or Silid class is introduced.");
+    printResult(
+        "Occupied + Free == Capacity",
+        system.countOccupied() +
+        system.countFree() ==
+        system.capacity()
+    );
+
+    printResult(
+        "Enabled + Disabled == Capacity",
+        system.countEnabled() +
+        system.countDisabled() ==
+        system.capacity()
+    );
+
+    printResult(
+        "Enabled <= Occupied",
+        system.countEnabled() <=
+        system.countOccupied()
+    );
 
 
-    // --------------------------------------------------
+    // ========================================================
+    // [10] API Boundary
+    // ========================================================
+
+    Serial.println();
+    Serial.println("[10] API Refinement Boundary");
+    printDivider();
+
+    Serial.println(
+        "countOccupied() describes Salpakan occupancy."
+    );
+
+    Serial.println(
+        "countFree() describes available Salpakan."
+    );
+
+    Serial.println(
+        "countEnabled() describes enabled Salpakan."
+    );
+
+    Serial.println(
+        "countDisabled() describes disabled Salpakan."
+    );
+
+    Serial.println(
+        "No lifecycle behavior was changed."
+    );
+
+    Serial.println(
+        "No Sapad execution behavior was introduced."
+    );
+
+    Serial.println(
+        "No ownership model was changed."
+    );
+
+
+    // ========================================================
+    // Complete
+    // ========================================================
 
     Serial.println();
     Serial.println("============================================================");
@@ -449,5 +426,7 @@ void setup() {
     Serial.println("============================================================");
 }
 
+
 void loop() {
+    // Experiment complete.
 }

@@ -89,10 +89,10 @@ class Salalayan {
         unsigned int findByName(const char* name, Salpakan** results, unsigned int maxResults);
         unsigned int findByName(const char* name, const Salpakan** results, unsigned int maxResults) const;
         unsigned int capacity() const;
-        unsigned int used() const;
-        unsigned int free() const;
-        unsigned int enabled() const;
-        unsigned int disabled() const;
+        unsigned int countOccupied() const;
+        unsigned int countFree() const;
+        unsigned int countEnabled() const;
+        unsigned int countDisabled() const;
         bool isEmpty() const;
         bool isFull() const;
 
