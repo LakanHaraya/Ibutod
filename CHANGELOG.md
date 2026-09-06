@@ -58,7 +58,7 @@ Sa kasalukuyang eksperimental na yugto ng **Ibutod**, ang mga bersiyon sa seryen
 
 ## [0.1.15] — Paglipat sa Terminolohiyang Filipino (*Filipino Terminology Migration*)
 ### Binago
-- Pinalitan ang pangunahing terminolngohiya ng Ubod upang gamitin ang mga canonical Filipino abstractions:
+- Pinalitan ang pangunahing terminolohiya ng Ubod upang gamitin ang mga canonical Filipino abstractions:
     - `UbodContainer` → `Salalayan`
     - `UbodSlot` → `Salpakan`
     - `UbodEngine` → `Sapad`
