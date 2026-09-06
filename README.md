@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="assets/ibutod-whiteFont-gridBg.svg"
+    <img src="assets/ibutod-stylized01-gridBg.svg"
         height="42"
         alt="Ibutod sa Baybayin"
         style="vertical-align: middle;">
