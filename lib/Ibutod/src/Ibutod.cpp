@@ -1,11 +1,9 @@
-#include <Arduino.h>
+// #include <Arduino.h>
 #include "Ibutod.h"
 
 Salpakan::Salpakan()
     : _id(0),
-      _idValid(false),
-      _state(SalpakanState::Invalid),
-      _startTime(0)
+      _idValid(false)
 {
     // Default constructor is private to prevent
     // creating Salpakan without a valid Salpakan ID.
@@ -15,7 +13,6 @@ Salpakan::Salpakan(unsigned int id)
     : _id(id)
 {
     _idValid = (_id > 0);
-    if (!_idValid) { _state = SalpakanState::Invalid; }
 }
 
 unsigned int Salpakan::id() const { return _id; }
@@ -118,25 +115,3 @@ bool Salpakan::disable() {
 
 bool Salpakan::isEnabled() const { return _enablement == SalpakanEnablement::Enabled; }
 
-// --------------------------------------------------
-// Ikot-Buhay
-// --------------------------------------------------
-
-void Salpakan::begin() {
-    if (!_idValid) { return; }
-    _state = SalpakanState::Ready;
-    _startTime = millis();
-}
-
-void Salpakan::update() {
-    if (!_idValid) { return; }
-    if (_state == SalpakanState::Ready) {
-        _state = SalpakanState::Running;
-    }
-}
-
-SalpakanState Salpakan::state() const { return _state; }
-
-bool Salpakan::isReady() const { return _state == SalpakanState::Ready; }
-
-unsigned long Salpakan::uptime() const { return millis() - _startTime; }

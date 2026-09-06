@@ -7,13 +7,6 @@
 class Sapad {
 };
 
-enum class SalpakanState {
-    Initializing, 
-    Ready,
-    Running,
-    Invalid
-};
-
 enum class SalpakanAvailability {
     Free,
     Occupied
@@ -29,30 +22,30 @@ class Salpakan
     public:
         explicit Salpakan(unsigned int id);
 
-        void begin();
-        void update();
+        // Attachment
         bool attach(Sapad* sapad);
         bool detach();
         Sapad* sapad();
         const Sapad* sapad() const;
         bool hasSapad() const;
 
+        // Identity
         unsigned int id() const;
         bool isIdValid() const;
+
+        // Naming
         bool setName(const char* name);
         const char* name() const;
 
+        // Occupancy
         SalpakanAvailability availability() const;
         bool isFree() const;
         bool isOccupied() const;
 
+        // Enablement
         bool enable();
         bool disable();
         bool isEnabled() const;
-
-        SalpakanState state() const;
-        bool isReady() const;
-        unsigned long uptime() const;
 
     private:
         template <unsigned int>
@@ -64,8 +57,6 @@ class Salpakan
         bool _idValid = false;
         Sapad* _sapad = nullptr;
         SalpakanEnablement _enablement = SalpakanEnablement::Disabled;
-        SalpakanState _state = SalpakanState::Initializing;
-        unsigned long _startTime = 0;
         bool isNameValid(const char* name) const;
 };
 
