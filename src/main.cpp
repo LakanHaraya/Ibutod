@@ -119,7 +119,7 @@ void setup() {
 
     Serial.println(
         afterEnable
-            ? "[PASS] Enablement invariants"
+            ? "[PASS] Enablement invariants"  
             : "[FAIL] Enablement invariants"
     );
 
