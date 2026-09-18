@@ -2,7 +2,7 @@
 #include "Ibutod.h"
 
 // --------------------------------------------------
-// Experiment 22-C — Multiple Sapad Types
+// Experiment 22-D — Execution Through Salpakan
 // --------------------------------------------------
 
 class SensorSapad : public Sapad {
@@ -38,7 +38,7 @@ void setup() {
     delay(1000);
 
     Serial.println();
-    Serial.println("=== Ibutod Experiment 22-C ===");
+    Serial.println("=== Ibutod Experiment 22-D ===");
 
     Salalayan<2> salalayan("Experiment");
 
@@ -58,66 +58,59 @@ void setup() {
     Serial.println(attachedCounter ? "PASS" : "FAIL");
 
     Serial.println();
-    Serial.println("[2] Enable both Salpakan");
+    Serial.println("[2] Retrieve Sapad through Salpakan");
 
-    bool enabledSensor = salalayan.enable(1);
-    bool enabledCounter = salalayan.enable(2);
+    Sapad* sapad1 = salalayan.get(1)->sapad();
+    Sapad* sapad2 = salalayan.get(2)->sapad();
 
-    Serial.print("Enable Salpakan 1: ");
-    Serial.println(enabledSensor ? "PASS" : "FAIL");
+    Serial.print("Salpakan 1 Sapad: ");
+    Serial.println(sapad1 != nullptr ? "PASS" : "FAIL");
 
-    Serial.print("Enable Salpakan 2: ");
-    Serial.println(enabledCounter ? "PASS" : "FAIL");
+    Serial.print("Salpakan 2 Sapad: ");
+    Serial.println(sapad2 != nullptr ? "PASS" : "FAIL");
 
     Serial.println();
-    Serial.println("[3] Execute SensorSapad");
+    Serial.println("[3] Execute through Sapad pointers");
 
-    sensorSapad.run();
+    if (sapad1 != nullptr) {
+        sapad1->run();
+    }
+
+    if (sapad2 != nullptr) {
+        sapad2->run();
+    }
 
     Serial.print("SensorSapad run count: ");
     Serial.println(sensorSapad.runCount());
 
-    Serial.println(
-        sensorSapad.runCount() == 1
-            ? "[PASS] SensorSapad executed"
-            : "[FAIL] SensorSapad execution"
-    );
-
-    Serial.println();
-    Serial.println("[4] Execute CounterSapad");
-
-    counterSapad.run();
-
     Serial.print("CounterSapad value: ");
     Serial.println(counterSapad.value());
 
-    Serial.println(
-        counterSapad.value() == 10
-            ? "[PASS] CounterSapad executed"
-            : "[FAIL] CounterSapad execution"
-    );
-
-    Serial.println();
-    Serial.println("[5] Verify independent behavior");
-
-    bool independent =
+    bool executed =
         sensorSapad.runCount() == 1 &&
         counterSapad.value() == 10;
 
-    Serial.print("SensorSapad run count: ");
-    Serial.println(sensorSapad.runCount());
-
-    Serial.print("CounterSapad value: ");
-    Serial.println(counterSapad.value());
-
     Serial.println(
-        independent
-            ? "[PASS] Sapad types retain independent behavior"
-            : "[FAIL] Sapad type behavior"
+        executed
+            ? "[PASS] Sapad executed through Salpakan"
+            : "[FAIL] Sapad execution through Salpakan"
     );
 
     Serial.println();
-    Serial.println("=== Experiment 22-C COMPLETE ===");
+    Serial.println("[4] Verify concrete behavior");
+
+    bool behavior =
+        sensorSapad.runCount() == 1 &&
+        counterSapad.value() == 10;
+
+    Serial.println(
+        behavior
+            ? "[PASS] Virtual execution preserved Sapad behavior"
+            : "[FAIL] Virtual execution behavior"
+    );
+
+    Serial.println();
+    Serial.println("=== Experiment 22-D COMPLETE ===");
 }
 
 void loop() {
