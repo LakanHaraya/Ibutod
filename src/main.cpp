@@ -1,8 +1,8 @@
 #include <Arduino.h>
-#include "Ibutod.h"
+#include <Ibutod.h>
 
 // --------------------------------------------------
-// Experiment 22 — Sapad Execution Boundary
+// Experiment 22-B — Multiple Sapad Instances
 // --------------------------------------------------
 
 class TestSapad : public Sapad {
@@ -24,67 +24,85 @@ void setup() {
     delay(1000);
 
     Serial.println();
-    Serial.println("=== Ibutod Experiment 22 ===");
+    Serial.println("=== Ibutod Experiment 22-B ===");
 
     Salalayan<2> salalayan("Experiment");
-    TestSapad sapad;
+    TestSapad sapadA;
+    TestSapad sapadB;
 
     Serial.println();
-    Serial.println("[1] Initial state");
+    Serial.println("[1] Attach two Sapad instances");
 
-    Serial.print("Occupied: ");
-    Serial.println(salalayan.get(1)->isOccupied() ? "YES" : "NO");
+    bool attachedA = salalayan.attach(1, &sapadA);
+    bool attachedB = salalayan.attach(2, &sapadB);
 
-    Serial.print("Enabled: ");
-    Serial.println(salalayan.get(1)->isEnabled() ? "YES" : "NO");
+    Serial.print("Attach Sapad A: ");
+    Serial.println(attachedA ? "PASS" : "FAIL");
+
+    Serial.print("Attach Sapad B: ");
+    Serial.println(attachedB ? "PASS" : "FAIL");
 
     Serial.println();
-    Serial.println("[2] Attach Sapad");
+    Serial.println("[2] Enable both Salpakan");
 
-    bool attached = salalayan.attach(1, &sapad);
-    Serial.print("Attach: ");
-    Serial.println(attached ? "PASS" : "FAIL");
+    bool enabledA = salalayan.enable(1);
+    bool enabledB = salalayan.enable(2);
 
-    Serial.print("Occupied: ");
+    Serial.print("Enable Salpakan 1: ");
+    Serial.println(enabledA ? "PASS" : "FAIL");
+
+    Serial.print("Enable Salpakan 2: ");
+    Serial.println(enabledB ? "PASS" : "FAIL");
+
+    Serial.println();
+    Serial.println("[3] Run Sapad A");
+
+    sapadA.run();
+
+    Serial.print("Sapad A run count: ");
+    Serial.println(sapadA.runCount());
+
     Serial.println(
-        salalayan.get(1)->isOccupied() ? "PASS" : "FAIL"
+    sapadA.runCount() == 1
+        ? "[PASS] Sapad A executed"
+        : "[FAIL] Sapad A execution"
     );
 
     Serial.println();
-    Serial.println("[3] Enable Salpakan");
+    Serial.println("[4] Run Sapad B");
 
-    bool enabled = salalayan.enable(1);
-    Serial.print("Enable: ");
-    Serial.println(enabled ? "PASS" : "FAIL");
+    sapadB.run();
 
-    Serial.println();
-    Serial.println("[4] Run Sapad");
-
-    sapad.run();
-
-    Serial.print("Run count: ");
-    Serial.println(sapad.runCount());
+    Serial.print("Sapad B run count: ");
+    Serial.println(sapadB.runCount());
 
     Serial.println(
-        sapad.runCount() == 1 ? "[PASS] Sapad executed"
-                               : "[FAIL] Sapad execution"
+    sapadB.runCount() == 1
+        ? "[PASS] Sapad B executed"
+        : "[FAIL] Sapad B execution"
     );
 
     Serial.println();
-    Serial.println("[5] Run Sapad again");
+    Serial.println("[5] Verify independent execution state");
 
-    sapad.run();
+    bool independent =
+        sapadA.runCount() == 1 &&
+        sapadB.runCount() == 1;
 
-    Serial.print("Run count: ");
-    Serial.println(sapad.runCount());
+    Serial.print("Sapad A count: ");
+    Serial.println(sapadA.runCount());
+
+    Serial.print("Sapad B count: ");
+    Serial.println(sapadB.runCount());
 
     Serial.println(
-        sapad.runCount() == 2 ? "[PASS] Sapad executed twice"
-                              : "[FAIL] Sapad execution count"
+        independent
+            ? "[PASS] Sapad instances are independent"
+            : "[FAIL] Sapad instances share execution state"
     );
 
     Serial.println();
-    Serial.println("=== Experiment 22 COMPLETE ===");
+    Serial.println("=== Experiment 22-B COMPLETE ===");
 }
 
 void loop() {
