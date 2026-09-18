@@ -4,6 +4,19 @@ Lahat ng kapansin-pansing pagbabago sa proyektong ito ay idodokumento sa file na
 Ang format ay batay sa [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Sa kasalukuyang eksperimental na yugto ng **Ibutod**, ang mga bersiyon sa seryeng `v0.1.x` ay nagsisilbing sunod-sunod na development versions. Maaaring magkaroon ng breaking changes, pagbabago sa API, o kawalan ng backward compatibility sa pagitan ng mga bersiyon. Ang version numbering sa yugtong ito ay hindi pa mahigpit na sumusunod sa [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.22] — 2026-09-19 — Hangganan ng Pagpapatakbo ng Sapad (*Sapad Execution Boundary*)
+### Idinagdag
+- Idinagdag ang minimal na `Sapad` execution contract sa pamamagitan ng virtual `run()` method.
+- Idinagdag ang virtual destructor sa `Sapad` bilang bahagi ng polymorphic execution boundary.
+- Pinahintulutan ang iba't ibang concrete `Sapad` type na maikabit sa `Salpakan` sa pamamagitan ng iisang `Sapad` interface.
+### Binago
+- Nilinaw ang `Sapad` bilang modular na program unit na may tiyak na layunin at sariling execution behavior.
+- Pinanatili ang `Salpakan` bilang structural attachment point at hindi ginawang scheduler o awtomatikong execution manager.
+- Pinanatiling hiwalay ang attachment, occupancy, enablement, at execution bilang magkakaibang konsepto.
+- Hindi awtomatikong nagpapatakbo ng `Sapad` ang `enable()` ng `Salpakan`.
+- Hindi awtomatikong nag-e-enable ng `Salpakan` ang `attach()`.
+- Pinanatili ang non-owning na `Sapad*` attachment model.
+
 ## [0.1.21] — 2026-09-06 — Paglilinis sa Estruktura ng Salpakan (*Salpakan Structural Purification*)
 ### Inalis
 - Inalis ang runtime lifecycle API mula sa `Salpakan`: `begin()`, `update()`, `state()`, `isReady()`, at `uptime()`.
