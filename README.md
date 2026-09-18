@@ -13,7 +13,7 @@
 [![Arduino](https://img.shields.io/badge/Arduino-compatible-00979D)](https://www.arduino.cc/)
 [![PlatformIO](https://img.shields.io/badge/PlatformIO-compatible-orange)](https://platformio.org/) -->
 [![Version](https://img.shields.io/github/v/tag/LakanHaraya/Ibutod?sort=semver&label=version)](https://github.com/LakanHaraya/Ibutod/tags)
-[![Status](https://img.shields.io/badge/status-Experimental-yellow)](https://github.com/LakanHaraya/Ibutod)
+[![Status](https://img.shields.io/badge/status-experimental-yellow)](https://github.com/LakanHaraya/Ibutod)
 [![Last Commit](https://img.shields.io/github/last-commit/LakanHaraya/Ibutod)](https://github.com/LakanHaraya/Ibutod/commits/uswag)
 [![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
