@@ -2,10 +2,10 @@
 #include "Ibutod.h"
 
 // --------------------------------------------------
-// Experiment 22-D — Execution Through Salpakan
+// Experiment 22-E — Detach / Reattach Behavior
 // --------------------------------------------------
 
-class SensorSapad : public Sapad {
+class TestSapad : public Sapad {
     public:
         void run() override {
             _runCount++;
@@ -19,98 +19,119 @@ class SensorSapad : public Sapad {
         unsigned int _runCount = 0;
 };
 
-class CounterSapad : public Sapad {
-    public:
-        void run() override {
-            _value += 10;
-        }
-
-        unsigned int value() const {
-            return _value;
-        }
-
-    private:
-        unsigned int _value = 0;
-};
-
 void setup() {
     Serial.begin(115200);
     delay(1000);
 
     Serial.println();
-    Serial.println("=== Ibutod Experiment 22-D ===");
+    Serial.println("=== Ibutod Experiment 22-E ===");
 
     Salalayan<2> salalayan("Experiment");
 
-    SensorSapad sensorSapad;
-    CounterSapad counterSapad;
+    TestSapad sapadA;
+    TestSapad sapadB;
 
     Serial.println();
-    Serial.println("[1] Attach different Sapad types");
+    Serial.println("[1] Attach Sapad A and B");
 
-    bool attachedSensor = salalayan.attach(1, &sensorSapad);
-    bool attachedCounter = salalayan.attach(2, &counterSapad);
+    bool attachedA = salalayan.attach(1, &sapadA);
+    bool attachedB = salalayan.attach(2, &sapadB);
 
-    Serial.print("Attach SensorSapad: ");
-    Serial.println(attachedSensor ? "PASS" : "FAIL");
+    Serial.print("Attach Sapad A: ");
+    Serial.println(attachedA ? "PASS" : "FAIL");
 
-    Serial.print("Attach CounterSapad: ");
-    Serial.println(attachedCounter ? "PASS" : "FAIL");
-
-    Serial.println();
-    Serial.println("[2] Retrieve Sapad through Salpakan");
-
-    Sapad* sapad1 = salalayan.get(1)->sapad();
-    Sapad* sapad2 = salalayan.get(2)->sapad();
-
-    Serial.print("Salpakan 1 Sapad: ");
-    Serial.println(sapad1 != nullptr ? "PASS" : "FAIL");
-
-    Serial.print("Salpakan 2 Sapad: ");
-    Serial.println(sapad2 != nullptr ? "PASS" : "FAIL");
+    Serial.print("Attach Sapad B: ");
+    Serial.println(attachedB ? "PASS" : "FAIL");
 
     Serial.println();
-    Serial.println("[3] Execute through Sapad pointers");
+    Serial.println("[2] Enable both Salpakan");
 
-    if (sapad1 != nullptr) {
-        sapad1->run();
-    }
+    bool enabledA = salalayan.enable(1);
+    bool enabledB = salalayan.enable(2);
 
-    if (sapad2 != nullptr) {
-        sapad2->run();
-    }
+    Serial.print("Enable Salpakan 1: ");
+    Serial.println(enabledA ? "PASS" : "FAIL");
 
-    Serial.print("SensorSapad run count: ");
-    Serial.println(sensorSapad.runCount());
+    Serial.print("Enable Salpakan 2: ");
+    Serial.println(enabledB ? "PASS" : "FAIL");
 
-    Serial.print("CounterSapad value: ");
-    Serial.println(counterSapad.value());
+    Serial.println();
+    Serial.println("[3] Verify detach is blocked while enabled");
 
-    bool executed =
-        sensorSapad.runCount() == 1 &&
-        counterSapad.value() == 10;
+    bool detachWhileEnabled = salalayan.detach(1);
 
+    Serial.print("Detach enabled Salpakan: ");
     Serial.println(
-        executed
-            ? "[PASS] Sapad executed through Salpakan"
-            : "[FAIL] Sapad execution through Salpakan"
+        !detachWhileEnabled
+            ? "PASS"
+            : "FAIL"
     );
 
     Serial.println();
-    Serial.println("[4] Verify concrete behavior");
+    Serial.println("[4] Disable Salpakan 1");
 
-    bool behavior =
-        sensorSapad.runCount() == 1 &&
-        counterSapad.value() == 10;
+    bool disabledA = salalayan.disable(1);
 
+    Serial.print("Disable Salpakan 1: ");
+    Serial.println(disabledA ? "PASS" : "FAIL");
+
+    Serial.println();
+    Serial.println("[5] Detach Sapad A");
+
+    bool detachedA = salalayan.detach(1);
+
+    Serial.print("Detach Sapad A: ");
+    Serial.println(detachedA ? "PASS" : "FAIL");
+
+    Serial.print("Salpakan 1 occupied: ");
     Serial.println(
-        behavior
-            ? "[PASS] Virtual execution preserved Sapad behavior"
-            : "[FAIL] Virtual execution behavior"
+        salalayan.get(1)->isOccupied()
+            ? "FAIL"
+            : "PASS"
+    );
+
+    Serial.print("Salpakan 1 enabled: ");
+    Serial.println(
+        salalayan.get(1)->isEnabled()
+            ? "FAIL"
+            : "PASS"
     );
 
     Serial.println();
-    Serial.println("=== Experiment 22-D COMPLETE ===");
+    Serial.println("[6] Reattach Sapad A to Salpakan 1");
+
+    bool reattachedA = salalayan.attach(1, &sapadA);
+
+    Serial.print("Reattach Sapad A: ");
+    Serial.println(reattachedA ? "PASS" : "FAIL");
+
+    Serial.print("Salpakan 1 occupied: ");
+    Serial.println(
+        salalayan.get(1)->isOccupied()
+            ? "PASS"
+            : "FAIL"
+    );
+
+    Serial.println();
+    Serial.println("[7] Execute reattached Sapad");
+
+    Sapad* sapad = salalayan.get(1)->sapad();
+
+    if (sapad != nullptr) {
+        sapad->run();
+    }
+
+    Serial.print("Sapad A run count: ");
+    Serial.println(sapadA.runCount());
+
+    Serial.println(
+        sapadA.runCount() == 1
+            ? "[PASS] Reattached Sapad executed"
+            : "[FAIL] Reattached Sapad execution"
+    );
+
+    Serial.println();
+    Serial.println("=== Experiment 22-E COMPLETE ===");
 }
 
 void loop() {
