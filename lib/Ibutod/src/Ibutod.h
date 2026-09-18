@@ -3,8 +3,11 @@
 #include <cstring>
 
 // Minimal type boundary for objects attachable to an Salpakan
-// Execution behavior is intentionally not defined yet.
+// Minimal execution boundary for modular program units.
 class Sapad {
+    public:
+        virtual ~Sapad() = default;
+        virtual void run() = 0;
 };
 
 enum class SalpakanAvailability {
